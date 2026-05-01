@@ -8,17 +8,22 @@ class App {
     public function __construct() {
         $url = $this->parseUrl();
 
-        // Vérifie si le fichier du contrôleur existe
-        if (isset($url[0]) && file_exists(__DIR__ . '/../controllers/' . ucfirst($url[0]) . 'Controller.php')) {
+        // -----------------------------------------------------------------
+        // Routage spécial : inscription → InscriptionController
+        // -----------------------------------------------------------------
+        if (isset($url[0]) && $url[0] === 'inscription') {
+            $this->controller = 'InscriptionController';
+            unset($url[0]);
+        }
+        // -----------------------------------------------------------------
+        // Routage générique : recherche d'un fichier de contrôleur correspondant
+        // -----------------------------------------------------------------
+        elseif (isset($url[0]) && file_exists(__DIR__ . '/../controllers/' . ucfirst($url[0]) . 'Controller.php')) {
             $this->controller = ucfirst($url[0]) . 'Controller';
             unset($url[0]);
         } else {
-            // Si le contrôleur n'existe pas, on peut rediriger vers une page 404 ou utiliser un contrôleur par défaut
-            // Pour l'instant, on utilise le contrôleur par défaut
-            // require_once __DIR__ . '/../controllers/ErrorController.php';
-            // $this->controller = new ErrorController();
-            // $this->method = 'notFound';
-            // return; // Arrête l'exécution ici si on gère une erreur 404
+            // Si le contrôleur n'existe pas, on utilise le contrôleur par défaut (HomeController)
+            // Vous pouvez implémenter une page 404 ici si besoin.
         }
 
         // Instancie le contrôleur
@@ -31,11 +36,7 @@ class App {
                 $this->method = $url[1];
                 unset($url[1]);
             } else {
-                // Méthode non trouvée, on peut gérer une erreur 404
-                // require_once __DIR__ . '/../controllers/ErrorController.php';
-                // $this->controller = new ErrorController();
-                // $this->method = 'notFound';
-                // return;
+                // Méthode non trouvée → vous pouvez rediriger vers une page 404 ici.
             }
         }
 
