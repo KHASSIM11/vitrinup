@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `boutiques` (
     `description`   TEXT NULL,
     `logo`          VARCHAR(255) NULL,
     `whatsapp`      VARCHAR(20)  NULL,
-    `email`        VARCHAR(255) NULL,
+    `email`         VARCHAR(255) NULL,
     `adresse`       VARCHAR(255) NULL,
     `ville`         VARCHAR(100) NULL,
     `statut`        ENUM('active','inactive') NOT NULL DEFAULT 'active',
