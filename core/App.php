@@ -16,6 +16,13 @@ class App {
             unset($url[0]);
         }
         // -----------------------------------------------------------------
+        // Routage spécial : superadmin → SuperAdminController
+        // -----------------------------------------------------------------
+        elseif (isset($url[0]) && $url[0] === 'superadmin') {
+            $this->controller = 'SuperAdminController';
+            unset($url[0]);
+        }
+        // -----------------------------------------------------------------
         // Routage générique : recherche d'un fichier de contrôleur correspondant
         // -----------------------------------------------------------------
         elseif (isset($url[0]) && file_exists(__DIR__ . '/../controllers/' . ucfirst($url[0]) . 'Controller.php')) {
