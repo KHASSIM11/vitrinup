@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrinup - Votre Vitrine de Chaussures en Ligne</title>
+    <title>Vitrinup - Créez votre boutique de chaussures</title>
     <style>
         /* Couleurs */
         :root {
