@@ -1,4 +1,7 @@
 <?php
+// Inclusion du fichier de configuration contenant les constantes DB_*.
+// Le chemin relatif part du répertoire core.
+require_once __DIR__ . '/../config/config.php';
 
 class Database {
     private $host = DB_HOST;
@@ -23,9 +26,10 @@ class Database {
         try {
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
         } catch (PDOException $e) {
-            // En cas d'erreur de connexion, affiche un message et arrête le script
+            // En cas d'erreur de connexion, on stocke le message d'erreur.
             $this->error = $e->getMessage();
-            echo $this->error; // En production, loggez cette erreur au lieu de l'afficher
+            // En production, il serait préférable de logger l'erreur plutôt que de l'afficher.
+            echo $this->error;
             die();
         }
     }
@@ -84,7 +88,7 @@ class Database {
         return $this->dbh->lastInsertId();
     }
 
-    // Gère les erreurs PDO (peut être étendu pour un logging plus poussé)
+    // Retourne l'éventuelle erreur PDO
     public function getError() {
         return $this->error;
     }
