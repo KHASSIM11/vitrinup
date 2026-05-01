@@ -113,7 +113,9 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($boutiques as $b): ?>
+                <?php
+                // $boutiques, $productMap et $orderMap sont extraits par la méthode view()
+                foreach ($boutiques as $b): ?>
                     <tr>
                         <td><?= htmlspecialchars($b['id']) ?></td>
                         <td><?= htmlspecialchars($b['nom']) ?></td>

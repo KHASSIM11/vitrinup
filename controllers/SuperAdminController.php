@@ -108,10 +108,7 @@ class SuperAdminController extends Controller {
             'orderMap'    => $orderMap
         ];
 
-        // Debug temporaire
-        var_dump($_SESSION);
-        var_dump($boutiques);
-
+        // La vue recevra les variables extraites via $this->view()
         $this->view('superadmin/index', $data);
     }
 
