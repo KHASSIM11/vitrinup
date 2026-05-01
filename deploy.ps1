@@ -1,8 +1,6 @@
 param([string]$message = "deploy")
 
-# Git
-git add .
-git commit -m $message
+# Git push
 git push
 
 # Lire .env.deploy
