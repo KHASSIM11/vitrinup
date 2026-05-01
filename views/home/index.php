@@ -312,7 +312,7 @@
     <main>
         <section class="hero">
             <div class="container">
-                <h2>Créez votre boutique de chaussures en ligne en 5 minutes</h2>
+                <h2>Créez votre boutique de chaussures en ligne en 5 minutes MA</h2>
                 <p>La solution simple et rapide pour vendre vos chaussures au Maroc via WhatsApp.</p>
                 <a href="<?= URL_ROOT ?>/inscription" class="btn">Commencer gratuitement</a>
             </div>
