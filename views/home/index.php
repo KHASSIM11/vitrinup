@@ -64,6 +64,16 @@
             background-color: #333;
         }
 
+        /* Nouveau style pour le bouton WhatsApp */
+        .btn-whatsapp {
+            background-color: #25D366; /* Vert WhatsApp */
+            color: var(--light-text-color);
+        }
+
+        .btn-whatsapp:hover {
+            background-color: #1DA851; /* Vert légèrement plus foncé au survol */
+        }
+
         /* Header */
         header {
             background-color: var(--secondary-color);
@@ -314,7 +324,7 @@
             <div class="container">
                 <h2>Créez votre boutique de chaussures en ligne en 5 minutes MA</h2>
                 <p>La solution simple et rapide pour vendre vos chaussures au Maroc via WhatsApp.</p>
-                <a href="<?= URL_ROOT ?>/inscription" class="btn">Commencer gratuitement</a>
+                <a href="<?= URL_ROOT ?>/inscription" class="btn btn-whatsapp">🚀 Commencer gratuitement</a>
             </div>
         </section>
 
