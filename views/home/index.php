@@ -362,7 +362,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; <?= date('Y') ?> Vitrinup. Tous droits réservés.</p>
+            <p>&copy; <?= date('Y') ?> Vitrinup. Tous droits réservés. Fait avec ❤️ au Maroc.</p>
         </div>
     </footer>
 
