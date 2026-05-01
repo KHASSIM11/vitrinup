@@ -107,6 +107,11 @@ class SuperAdminController extends Controller {
             'productMap'  => $productMap,
             'orderMap'    => $orderMap
         ];
+
+        // Debug temporaire
+        var_dump($_SESSION);
+        var_dump($boutiques);
+
         $this->view('superadmin/index', $data);
     }
 
