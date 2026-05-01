@@ -14,10 +14,13 @@ class SuperAdminController extends Controller {
     }
 
     /**
-     * Vérifie si le super‑admin est connecté.
+     * Vérifie si le super‑admin ou un admin temporaire est connecté.
      */
     private function isLogged(): bool {
-        return isset($_SESSION['role']) && $_SESSION['role'] === 'superadmin';
+        return isset($_SESSION['role']) && (
+            $_SESSION['role'] === 'superadmin' ||
+            $_SESSION['role'] === 'admin'      // rôle admin accepté temporairement
+        );
     }
 
     /**
@@ -75,18 +78,24 @@ class SuperAdminController extends Controller {
     public function index(): void {
         $this->requireLogin();
 
-        // Récupération de toutes les boutiques
-        $boutiques = $this->db->query('SELECT * FROM boutiques')->resultSet();
+        // Récupération de toutes les boutiques, triées par date de création décroissante
+        $boutiques = $this->db
+            ->query('SELECT * FROM boutiques ORDER BY created_at DESC')
+            ->resultSet();
 
         // Statistiques : nombre de produits par boutique
-        $productCounts = $this->db->query('SELECT boutique_id, COUNT(*) AS product_count FROM produits GROUP BY boutique_id')->resultSet();
+        $productCounts = $this->db
+            ->query('SELECT boutique_id, COUNT(*) AS product_count FROM produits GROUP BY boutique_id')
+            ->resultSet();
         $productMap = [];
         foreach ($productCounts as $row) {
             $productMap[$row['boutique_id']] = $row['product_count'];
         }
 
         // Statistiques : nombre de commandes par boutique
-        $orderCounts = $this->db->query('SELECT boutique_id, COUNT(*) AS order_count FROM commandes GROUP BY boutique_id')->resultSet();
+        $orderCounts = $this->db
+            ->query('SELECT boutique_id, COUNT(*) AS order_count FROM commandes GROUP BY boutique_id')
+            ->resultSet();
         $orderMap = [];
         foreach ($orderCounts as $row) {
             $orderMap[$row['boutique_id']] = $row['order_count'];
