@@ -1,2 +1,4 @@
 .env.deploy
 .aider*
+config/.env.php
+``
