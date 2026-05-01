@@ -345,7 +345,7 @@
             <div class="container">
                 <h2>Notre Offre Simple et Abordable</h2>
                 <div class="pricing-card">
-                    <div class="price">149 DH</div>
+                    <div class="price">199 DH</div>
                     <div class="period">par mois</div>
                     <ul>
                         <li><i class="fas fa-check"></i> Vitrine personnalisable</li>
