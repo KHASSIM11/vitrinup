@@ -17,7 +17,7 @@ class SuperAdminController extends Controller {
      * Vérifie si le super‑admin est connecté.
      */
     private function isLogged(): bool {
-        return isset($_SESSION['superadmin_logged']) && $_SESSION['superadmin_logged'] === true;
+        return isset($_SESSION['role']) && $_SESSION['role'] === 'superadmin';
     }
 
     /**
@@ -25,7 +25,7 @@ class SuperAdminController extends Controller {
      */
     private function requireLogin(): void {
         if (!$this->isLogged()) {
-            header('Location: ' . URL_ROOT . '/superadmin/login');
+            header('Location: ' . URL_ROOT . '/login');
             exit;
         }
     }
@@ -46,7 +46,7 @@ class SuperAdminController extends Controller {
             $validHash  = password_hash('SuperSecret123', PASSWORD_DEFAULT);
 
             if ($email === $validEmail && password_verify($password, $validHash)) {
-                $_SESSION['superadmin_logged'] = true;
+                $_SESSION['role'] = 'superadmin';
                 header('Location: ' . URL_ROOT . '/superadmin');
                 exit;
             } else {
@@ -65,7 +65,7 @@ class SuperAdminController extends Controller {
      */
     public function logout(): void {
         session_destroy();
-        header('Location: ' . URL_ROOT . '/superadmin/login');
+        header('Location: ' . URL_ROOT . '/login');
         exit;
     }
 

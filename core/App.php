@@ -23,6 +23,26 @@ class App {
             unset($url[0]);
         }
         // -----------------------------------------------------------------
+        // Routage spécial : login / logout
+        // -----------------------------------------------------------------
+        elseif (isset($url[0]) && $url[0] === 'login') {
+            $this->controller = 'AuthController';
+            $this->method = 'login';
+            unset($url[0]);
+        }
+        elseif (isset($url[0]) && $url[0] === 'logout') {
+            $this->controller = 'AuthController';
+            $this->method = 'logout';
+            unset($url[0]);
+        }
+        // -----------------------------------------------------------------
+        // Routage spécial : dashboard
+        // -----------------------------------------------------------------
+        elseif (isset($url[0]) && $url[0] === 'dashboard') {
+            $this->controller = 'DashboardController';
+            unset($url[0]);
+        }
+        // -----------------------------------------------------------------
         // Routage générique : recherche d'un fichier de contrôleur correspondant
         // -----------------------------------------------------------------
         elseif (isset($url[0]) && file_exists(__DIR__ . '/../controllers/' . ucfirst($url[0]) . 'Controller.php')) {

@@ -83,5 +83,12 @@ CREATE TABLE IF NOT EXISTS `commandes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Super admin user (sans boutique)
+-- --------------------------------------------------------
+INSERT INTO utilisateurs (boutique_id, nom, email, password, role) VALUES
+(NULL, 'Super Admin', 'admin@vitrinup.com', '$2y$10$XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', 'admin');
+-- Remarque : le champ password doit contenir le hash généré par password_hash('Vitrinup2026!', PASSWORD_DEFAULT)
+
+-- --------------------------------------------------------
 -- Fin du schéma
 -- --------------------------------------------------------
