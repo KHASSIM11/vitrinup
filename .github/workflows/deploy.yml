@@ -1,4 +1,4 @@
-name: Deploy to Hostinger
+name: CI Check
 
 on:
   push:
@@ -6,10 +6,9 @@ on:
       - main
 
 jobs:
-  deploy:
+  check:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
-        run: |
-          sudo apt-get update && sudo apt-get install -y sshpass
-          sshpass -p "${{ secrets.SSH_PASS }}" ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.SSH_PATH }} && git fetch origin && git reset --hard origin/main"
+      - uses: actions/checkout@v4
+      - name: Check PHP syntax
+        run: find . -name "*.php" -exec php -l {} \; 2>&1 | grep -v "No syntax errors"
