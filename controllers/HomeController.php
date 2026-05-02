@@ -10,7 +10,7 @@ class HomeController extends Controller {
         $db = new Database();
 
         $products = $db->query(
-            "SELECT p.id, p.nom, p.prix, p.prix_promo, i.url AS image
+            "SELECT p.id, p.nom, p.prix, p.prix_promo, i.chemin AS chemin
              FROM produits p
              JOIN images_produits i ON p.id = i.produit_id
              WHERE p.actif = 1 AND i.est_principale = 1
