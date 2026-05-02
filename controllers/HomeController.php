@@ -11,7 +11,7 @@ class HomeController extends Controller {
         $db = new Database();
 
         // Récupération des 8 derniers produits actifs avec leur image principale
-        $produits = $db->query(
+        $products = $db->query(
             "SELECT p.id, p.nom, p.slug, p.prix, p.prix_promo, p.genre, p.marque,
                     i.chemin AS image
              FROM produits p
@@ -21,14 +21,14 @@ class HomeController extends Controller {
              LIMIT 8"
         )->resultSet();
 
-        // Récupération des catégories pour la bannière
+        // Récupération des catégories pour la bannière (non utilisée dans la vue actuelle)
         $categories = $db->query(
             "SELECT * FROM categories ORDER BY ordre ASC"
         )->resultSet();
 
         $data = [
             'title'      => SITE_NAME,
-            'produits'   => $produits,
+            'products'   => $products,   // <-- clé corrigée pour correspondre à la vue
             'categories' => $categories,
         ];
 
