@@ -11,7 +11,7 @@ class HomeController extends Controller {
         $db = new Database();
 
         // Récupération des 8 derniers produits actifs avec leur image principale
-        $products = $db->query(
+        $produits = $db->query(
             "SELECT p.id, p.nom, p.slug, p.prix, p.prix_promo, p.genre, p.marque,
                     i.chemin AS image
              FROM produits p
