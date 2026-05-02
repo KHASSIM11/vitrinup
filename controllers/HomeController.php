@@ -28,7 +28,7 @@ class HomeController extends Controller {
 
         $data = [
             'title'      => SITE_NAME,
-            'products'   => $products,   // <-- clé corrigée pour correspondre à la vue
+            'produits' => $produits,   // <-- clé corrigée pour correspondre à la vue
             'categories' => $categories,
         ];
 
