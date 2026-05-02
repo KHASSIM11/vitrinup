@@ -1,382 +1,215 @@
+<?php
+/**
+ * Vue d'accueil moderne pour Vitrinup.
+ * Variables attendues :
+ *   - $title    : titre de la page
+ *   - $products : tableau des produits (id, nom, prix, prix_promo, image)
+ */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <title><?= htmlspecialchars($title) ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrinup - Créez votre boutique de chaussures</title>
     <style>
-        /* Couleurs */
         :root {
-            --primary-color: #FF6600; /* Orange */
-            --secondary-color: #1a1a1a; /* Noir */
-            --text-color: #333;
-            --light-text-color: #fff;
-            --background-color: #f4f4f4;
+            --bg-dark: #0a0a0a;
+            --bg-light: #f5f0eb;
+            --accent-gold: #c9a84c;
+            --text-light: #f5f0eb;
+            --text-dark: #0a0a0a;
+            --price-promo: #e53935;
         }
-
-        /* Styles Généraux */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: var(--text-color);
-            background-color: var(--background-color);
-            line-height: 1.6;
+            margin:0;
+            font-family:Arial,Helvetica,sans-serif;
+            background:var(--bg-dark);
+            color:var(--text-light);
         }
+        a { color:var(--accent-gold); text-decoration:none; }
+        a:hover { text-decoration:underline; }
 
-        .container {
-            width: 90%;
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        h1, h2, h3 {
-            color: var(--secondary-color);
-        }
-
-        a {
-            text-decoration: none;
-            color: var(--primary-color);
-        }
-
-        .btn {
-            display: inline-block;
-            background-color: var(--primary-color);
-            color: var(--light-text-color);
-            padding: 12px 25px;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background-color: #e65c00; /* Orange plus foncé au survol */
-        }
-
-        .btn-secondary {
-            background-color: var(--secondary-color);
-        }
-
-        .btn-secondary:hover {
-            background-color: #333;
-        }
-
-        /* Nouveau style pour le bouton WhatsApp */
-        .btn-whatsapp {
-            background-color: #25D366; /* Vert WhatsApp */
-            color: var(--light-text-color);
-        }
-
-        .btn-whatsapp:hover {
-            background-color: #1DA851; /* Vert légèrement plus foncé au survol */
-        }
-
-        /* Header */
-        header {
-            background-color: var(--secondary-color);
-            color: var(--light-text-color);
-            padding: 15px 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        header .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        header h1 a {
-            color: var(--light-text-color);
-        }
-
-        header nav ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-        }
-
-        header nav ul li {
-            margin-left: 20px;
-        }
-
-        header nav ul li a {
-            color: var(--light-text-color);
-            font-weight: bold;
-            transition: color 0.3s ease;
-        }
-
-        header nav ul li a:hover {
-            color: var(--primary-color);
-        }
-
-        /* Hero Section */
+        /* HERO */
         .hero {
-            background-color: var(--secondary-color);
-            color: var(--light-text-color);
-            text-align: center;
-            padding: 80px 0;
-            position: relative;
-            overflow: hidden; /* Pour contenir les éléments absolus */
+            height:100vh;
+            background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),url('https://via.placeholder.com/1920x1080/0a0a0a/f5f0eb?text=Hero');
+            background-size:cover;
+            background-position:center;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            text-align:center;
+            padding:0 20px;
+        }
+        .hero h1 { font-size:3.5rem; margin:0; }
+        .hero p { font-size:1.5rem; margin:20px 0; }
+        .hero .btn {
+            background:var(--accent-gold);
+            color:var(--bg-dark);
+            padding:12px 30px;
+            border:none;
+            border-radius:5px;
+            font-weight:bold;
+            cursor:pointer;
+        }
+        .hero .btn:hover { opacity:0.9; }
+
+        /* PRODUCTS GRID */
+        .products-section { padding:60px 20px; text-align:center; }
+        .products-section h2 { margin-bottom:30px; font-size:2rem; }
+        .products-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
+            gap:20px;
+            max-width:1200px;
+            margin:0 auto;
+        }
+        .product-card {
+            background:var(--bg-light);
+            color:var(--text-dark);
+            border-radius:8px;
+            overflow:hidden;
+            box-shadow:0 4px 12px rgba(0,0,0,0.3);
+            display:flex;
+            flex-direction:column;
+        }
+        .product-card img {
+            width:100%;
+            height:200px;
+            object-fit:cover;
+        }
+        .product-card .info {
+            padding:15px;
+            flex-grow:1;
+        }
+        .product-card .info h3 { margin:0 0 10px; font-size:1.2rem; }
+        .product-card .info .price {
+            font-size:1.1rem;
+            margin-bottom:10px;
+        }
+        .product-card .info .price .promo {
+            color:var(--price-promo);
+            font-weight:bold;
+        }
+        .product-card .whatsapp-btn {
+            background:var(--accent-gold);
+            color:var(--bg-dark);
+            text-align:center;
+            padding:10px;
+            font-weight:bold;
+        }
+        .product-card .whatsapp-btn:hover { opacity:0.9; }
+
+        /* CATEGORIES BANNER */
+        .categories {
+            display:flex;
+            flex-wrap:wrap;
+            margin:40px 0;
+        }
+        .category {
+            flex:1 1 33.333%;
+            position:relative;
+            height:200px;
+            background-size:cover;
+            background-position:center;
+            margin:5px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--text-light);
+            font-size:1.5rem;
+            font-weight:bold;
+            text-shadow:0 2px 4px rgba(0,0,0,0.7);
+        }
+        .category::after {
+            content:"";
+            position:absolute;
+            inset:0;
+            background:rgba(0,0,0,0.4);
+        }
+        .category a {
+            position:relative;
+            z-index:2;
         }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('https://via.placeholder.com/1500x800/1a1a1a/ffffff?text=Image+Chaussures+Hero') no-repeat center center/cover;
-            opacity: 0.3;
-            z-index: 1;
-        }
-
-        .hero .container {
-            position: relative; /* Pour que le contenu soit au-dessus du pseudo-élément */
-            z-index: 2;
-        }
-
-        .hero h2 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            line-height: 1.2;
-            color: var(--light-text-color);
-        }
-
-        .hero p {
-            font-size: 18px;
-            margin-bottom: 30px;
-            opacity: 0.9;
-        }
-
-        /* Features Section */
-        .features {
-            padding: 60px 0;
-            text-align: center;
-        }
-
-        .features h2 {
-            font-size: 36px;
-            margin-bottom: 40px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        .feature-item {
-            background-color: var(--light-text-color);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .feature-item:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .feature-item i {
-            font-size: 40px;
-            color: var(--primary-color);
-            margin-bottom: 20px;
-        }
-
-        .feature-item h3 {
-            font-size: 22px;
-            margin-bottom: 15px;
-        }
-
-        .feature-item p {
-            font-size: 16px;
-            color: #555;
-        }
-
-        /* Pricing Section */
-        .pricing {
-            background-color: var(--secondary-color);
-            color: var(--light-text-color);
-            padding: 60px 0;
-            text-align: center;
-        }
-
-        .pricing h2 {
-            font-size: 36px;
-            margin-bottom: 40px;
-            color: var(--light-text-color);
-        }
-
-        .pricing-card {
-            background-color: #222; /* Noir légèrement plus clair pour la carte */
-            padding: 40px;
-            border-radius: 8px;
-            display: inline-block;
-            max-width: 350px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-
-        .pricing-card .price {
-            font-size: 50px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-
-        .pricing-card .period {
-            font-size: 18px;
-            color: #ccc;
-            margin-bottom: 30px;
-        }
-
-        .pricing-card ul {
-            list-style: none;
-            padding: 0;
-            margin-bottom: 40px;
-            text-align: left;
-        }
-
-        .pricing-card ul li {
-            margin-bottom: 15px;
-            font-size: 16px;
-            color: #eee;
-            display: flex;
-            align-items: center;
-        }
-
-        .pricing-card ul li i {
-            color: var(--primary-color);
-            margin-right: 10px;
-        }
-
-        /* Footer */
+        /* FOOTER */
         footer {
-            background-color: var(--secondary-color);
-            color: var(--light-text-color);
-            text-align: center;
-            padding: 30px 0;
-            margin-top: 40px;
+            background:var(--bg-dark);
+            color:var(--text-light);
+            text-align:center;
+            padding:20px;
+            font-size:0.9rem;
+        }
+        footer a.whatsapp {
+            color:var(--accent-gold);
+            font-weight:bold;
         }
 
-        footer p {
-            margin: 0;
-            font-size: 14px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            header .container {
-                flex-direction: column;
-            }
-
-            header nav ul {
-                margin-top: 15px;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            header nav ul li {
-                margin: 5px 0;
-            }
-
-            .hero h2 {
-                font-size: 36px;
-            }
-
-            .hero p {
-                font-size: 16px;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .pricing-card {
-                max-width: 90%;
-            }
+        @media (max-width:768px) {
+            .hero h1 {font-size:2.5rem;}
+            .hero p {font-size:1.2rem;}
+            .categories {flex-direction:column;}
+            .category {flex:1 1 100%; height:150px;}
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1><a href="<?= URL_ROOT ?>"><?= SITE_NAME ?></a></h1>
-            <a href="<?= URL_ROOT ?>/inscription" class="btn btn-secondary">Créer ma boutique</a>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <h1><?= htmlspecialchars(SITE_NAME) ?></h1>
+        <p>Votre boutique de chaussures marocaine, moderne et luxueuse.</p>
+        <a href="<?= URL_ROOT ?>/catalogue" class="btn">Voir la collection</a>
+    </section>
+
+    <!-- NOVELTIES SECTION -->
+    <section class="products-section">
+        <h2>Nouveautés</h2>
+        <div class="products-grid">
+            <?php foreach ($products as $product): ?>
+                <div class="product-card">
+                    <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['nom']) ?>">
+                    <div class="info">
+                        <h3><?= htmlspecialchars($product['nom']) ?></h3>
+                        <div class="price">
+                            <?php if (!empty($product['prix_promo'])): ?>
+                                <span class="promo"><?= number_format($product['prix_promo'], 2, ',', ' ') ?> DH</span>
+                                <del><?= number_format($product['prix'], 2, ',', ' ') ?> DH</del>
+                            <?php else: ?>
+                                <?= number_format($product['prix'], 2, ',', ' ') ?> DH
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php
+                        $whatsappText = "Bonjour, je suis intéressé par : " . $product['nom'];
+                        $whatsappLink = "https://wa.me/" . WHATSAPP . "?text=" . rawurlencode($whatsappText);
+                    ?>
+                    <a href="<?= $whatsappLink ?>" target="_blank" class="whatsapp-btn">WhatsApp</a>
+                </div>
+            <?php endforeach; ?>
         </div>
-    </header>
+    </section>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h2>Créez votre boutique de chaussures en ligne en 5 minutes MA</h2>
-                <p>La solution simple et rapide pour vendre vos chaussures au Maroc via WhatsApp.</p>
-                <a href="<?= URL_ROOT ?>/inscription" class="btn btn-whatsapp">🚀 Commencer gratuitement</a>
-            </div>
-        </section>
+    <!-- CATEGORIES BANNER -->
+    <section class="categories">
+        <div class="category" style="background-image:url('https://via.placeholder.com/600x400/0a0a0a/f5f0eb?text=Homme');">
+            <a href="<?= URL_ROOT ?>/catalogue?genre=homme">Homme</a>
+        </div>
+        <div class="category" style="background-image:url('https://via.placeholder.com/600x400/0a0a0a/f5f0eb?text=Femme');">
+            <a href="<?= URL_ROOT ?>/catalogue?genre=femme">Femme</a>
+        </div>
+        <div class="category" style="background-image:url('https://via.placeholder.com/600x400/0a0a0a/f5f0eb?text=Enfant');">
+            <a href="<?= URL_ROOT ?>/catalogue?genre=enfant">Enfant</a>
+        </div>
+    </section>
 
-        <section class="features">
-            <div class="container">
-                <h2>Pourquoi choisir Vitrinup ?</h2>
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <i class="fas fa-store"></i> <!-- Icône Font Awesome pour vitrine -->
-                        <h3>Vitrine en ligne professionnelle</h3>
-                        <p>Présentez vos produits de manière attrayante avec une page dédiée à votre marque.</p>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-box"></i> <!-- Icône Font Awesome pour catalogue -->
-                        <h3>Catalogue produits facile à gérer</h3>
-                        <p>Ajoutez, modifiez et organisez vos chaussures avec photos, descriptions et prix.</p>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fab fa-whatsapp"></i> <!-- Icône Font Awesome pour WhatsApp -->
-                        <h3>Commandes via WhatsApp</h3>
-                        <p>Simplifiez la prise de commande et la communication avec vos clients via WhatsApp.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="pricing">
-            <div class="container">
-                <h2>Notre Offre Simple et Abordable</h2>
-                <div class="pricing-card">
-                    <div class="price">199 DH</div>
-                    <div class="period">par mois</div>
-                    <ul>
-                        <li><i class="fas fa-check"></i> Vitrine personnalisable</li>
-                        <li><i class="fas fa-check"></i> Catalogue illimité</li>
-                        <li><i class="fas fa-check"></i> Intégration WhatsApp</li>
-                        <li><i class="fas fa-check"></i> Paiement à la livraison</li>
-                        <li><i class="fas fa-check"></i> Support client</li>
-                    </ul>
-                    <a href="<?= URL_ROOT ?>/inscription" class="btn">Choisir cette offre</a>
-                </div>
-            </div>
-        </section>
-    </main>
-
+    <!-- FOOTER -->
     <footer>
-        <div class="container">
-            <p>&copy; <?= date('Y') ?> Vitrinup. Tous droits réservés. Fait avec ❤️ au Maroc.</p>
-        </div>
+        <p><?= htmlspecialchars(SITE_NAME) ?> – <a class="whatsapp" href="https://wa.me/<?= WHATSAPP ?>" target="_blank">WhatsApp : <?= WHATSAPP ?></a></p>
+        <p>&copy; <?= date('Y') ?> Tous droits réservés.</p>
     </footer>
 
-    <!-- Inclusion de Font Awesome pour les icônes -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
