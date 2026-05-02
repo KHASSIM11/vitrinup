@@ -1,90 +1,119 @@
 <?php
 
 class App {
-    protected $controller = 'HomeController'; // Contrôleur par défaut
-    protected $method = 'index'; // Méthode par défaut
-    protected $params = []; // Paramètres passés à la méthode
+
+    protected $controller = 'HomeController';
+    protected $method     = 'index';
+    protected $params     = [];
 
     public function __construct() {
         $url = $this->parseUrl();
+        $segment = $url[0] ?? '';
 
-        // -----------------------------------------------------------------
-        // Routage spécial : inscription → InscriptionController
-        // -----------------------------------------------------------------
-        if (isset($url[0]) && $url[0] === 'inscription') {
-            $this->controller = 'InscriptionController';
-            unset($url[0]);
-        }
-        // -----------------------------------------------------------------
-        // Routage spécial : superadmin → SuperAdminController
-        // -----------------------------------------------------------------
-        elseif (isset($url[0]) && $url[0] === 'superadmin') {
-            $this->controller = 'SuperAdminController';
-            unset($url[0]);
-        }
-        // -----------------------------------------------------------------
-        // Routage spécial : login / logout
-        // -----------------------------------------------------------------
-        elseif (isset($url[0]) && $url[0] === 'login') {
-            $this->controller = 'AuthController';
-            $this->method = 'login';
-            unset($url[0]);
-        }
-        elseif (isset($url[0]) && $url[0] === 'logout') {
-            $this->controller = 'AuthController';
-            $this->method = 'logout';
-            unset($url[0]);
-        }
-        // -----------------------------------------------------------------
-        // Routage spécial : dashboard
-        // -----------------------------------------------------------------
-        elseif (isset($url[0]) && $url[0] === 'dashboard') {
-            $this->controller = 'DashboardController';
-            unset($url[0]);
-        }
-        // -----------------------------------------------------------------
-        // Routage générique : recherche d'un fichier de contrôleur correspondant
-        // -----------------------------------------------------------------
-        elseif (isset($url[0]) && file_exists(__DIR__ . '/../controllers/' . ucfirst($url[0]) . 'Controller.php')) {
-            $this->controller = ucfirst($url[0]) . 'Controller';
-            unset($url[0]);
-        } else {
-            // Si le contrôleur n'existe pas, on utilise le contrôleur par défaut (HomeController)
-            // Vous pouvez implémenter une page 404 ici si besoin.
-        }
+        // ----------------------------------------------------------------
+        // ROUTES PUBLIQUES
+        // ----------------------------------------------------------------
+        if ($segment === '') {
+            $this->controller = 'HomeController';
 
-        // Instancie le contrôleur
-        require_once __DIR__ . '/../controllers/' . $this->controller . '.php';
-        $this->controller = new $this->controller;
+        } elseif ($segment === 'catalogue') {
+            $this->controller = 'CatalogueController';
 
-        // Vérifie si la méthode existe dans le contrôleur
-        if (isset($url[1])) {
-            if (method_exists($this->controller, $url[1])) {
-                $this->method = $url[1];
-                unset($url[1]);
-            } else {
-                // Méthode non trouvée → vous pouvez rediriger vers une page 404 ici.
+        } elseif ($segment === 'produit') {
+            $this->controller = 'ProduitController';
+            // /produit/{slug}
+            if (!empty($url[1])) {
+                $this->method  = 'show';
+                $this->params  = [$url[1]];
             }
+
+        } elseif ($segment === 'contact') {
+            $this->controller = 'ContactController';
+
+        // ----------------------------------------------------------------
+        // ROUTES ADMIN
+        // ----------------------------------------------------------------
+        } elseif ($segment === 'admin') {
+            $sousPage = $url[1] ?? 'index';
+
+            switch ($sousPage) {
+                case 'login':
+                    $this->controller = 'AdminAuthController';
+                    $this->method     = 'login';
+                    break;
+
+                case 'logout':
+                    $this->controller = 'AdminAuthController';
+                    $this->method     = 'logout';
+                    break;
+
+                case 'produits':
+                    $this->controller = 'AdminProduitsController';
+                    $action = $url[2] ?? 'index';
+                    // /admin/produits/ajouter
+                    // /admin/produits/modifier/{id}
+                    // /admin/produits/supprimer/{id}
+                    if (in_array($action, ['index', 'ajouter', 'modifier', 'supprimer'])) {
+                        $this->method = $action;
+                        $this->params = isset($url[3]) ? [$url[3]] : [];
+                    }
+                    break;
+
+                case 'categories':
+                    $this->controller = 'AdminCategoriesController';
+                    $this->method     = $url[2] ?? 'index';
+                    $this->params     = isset($url[3]) ? [$url[3]] : [];
+                    break;
+
+                case 'commandes':
+                    $this->controller = 'AdminCommandesController';
+                    $this->method     = $url[2] ?? 'index';
+                    $this->params     = isset($url[3]) ? [$url[3]] : [];
+                    break;
+
+                default:
+                    // /admin → dashboard
+                    $this->controller = 'AdminController';
+                    $this->method     = 'index';
+                    break;
+            }
+
+        // ----------------------------------------------------------------
+        // 404 — route inconnue
+        // ----------------------------------------------------------------
+        } else {
+            $this->controller = 'HomeController';
+            $this->method     = 'notFound';
         }
 
-        // Récupère les paramètres restants
-        $this->params = $url ? array_values($url) : [];
+        // Charge et instancie le contrôleur
+        $controllerFile = __DIR__ . '/../controllers/' . $this->controller . '.php';
 
-        // Appelle la méthode du contrôleur avec les paramètres
-        call_user_func_array([$this->controller, $this->method], $this->params);
+        if (file_exists($controllerFile)) {
+            require_once $controllerFile;
+            $this->controller = new $this->controller;
+        } else {
+            die('Contrôleur introuvable : ' . $this->controller);
+        }
+
+        // Appelle la méthode avec les paramètres
+        if (method_exists($this->controller, $this->method)) {
+            call_user_func_array([$this->controller, $this->method], $this->params);
+        } else {
+            die('Méthode introuvable : ' . $this->method);
+        }
     }
 
-    public function parseUrl() {
+    public function parseUrl(): array {
         if (isset($_GET['url'])) {
-            // Nettoie l'URL et la sépare en tableau
-            return explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL));
+            $url = filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL);
+            return explode('/', $url);
         }
-        return []; // Retourne un tableau vide si pas d'URL spécifiée
+        return [''];
     }
 
-    public function run() {
-        // L'instanciation du contrôleur et l'appel de la méthode se font dans le constructeur
-        // Cette méthode peut être utilisée pour d'autres initialisations globales si nécessaire
+    public function run(): void {
+        // Déjà géré dans le constructeur
     }
 }
 ?>
