@@ -5,9 +5,9 @@
 
 session_start();
 
+// Activation temporaire de l'affichage des erreurs PHP pour le débogage
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
 
 // Configuration
 require_once __DIR__ . '/config/config.php';
