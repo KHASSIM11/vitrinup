@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../core/Controller.php';
+require_once __DIR__ . '/../core/Database.php';
 
 class HomeController extends Controller {
 
@@ -6,29 +8,35 @@ class HomeController extends Controller {
      * Affiche la page d'accueil avec les 8 derniers produits actifs.
      */
     public function index(): void {
-        // Récupération des 8 derniers produits actifs avec leur image principale
         $db = new Database();
 
-        $products = $db->query(
-            "SELECT p.id, p.nom, p.prix, p.prix_promo, i.url AS image
+        // Récupération des 8 derniers produits actifs avec leur image principale
+        $produits = $db->query(
+            "SELECT p.id, p.nom, p.slug, p.prix, p.prix_promo, p.genre, p.marque,
+                    i.chemin AS image
              FROM produits p
-             JOIN images_produits i ON p.id = i.produit_id
-             WHERE p.actif = 1 AND i.est_principale = 1
+             LEFT JOIN images_produits i ON p.id = i.produit_id AND i.est_principale = 1
+             WHERE p.statut = 'actif'
              ORDER BY p.created_at DESC
              LIMIT 8"
         )->resultSet();
 
-        // Passage des données à la vue
+        // Récupération des catégories pour la bannière
+        $categories = $db->query(
+            "SELECT * FROM categories ORDER BY ordre ASC"
+        )->resultSet();
+
         $data = [
-            'title'    => 'Bienvenue sur ' . SITE_NAME,
-            'products' => $products
+            'title'      => SITE_NAME,
+            'produits'   => $produits,
+            'categories' => $categories,
         ];
 
         $this->view('home/index', $data);
     }
 
     /**
-     * Affiche une page 404 simple.
+     * Page 404
      */
     public function notFound(): void {
         http_response_code(404);
@@ -38,14 +46,12 @@ class HomeController extends Controller {
     <meta charset="UTF-8">
     <title>404 - Page non trouvée</title>
     <style>
-        body { background:#0a0a0a; color:#f5f0eb; font-family:Arial,Helvetica,sans-serif; text-align:center; padding:100px; }
-        a { color:#c9a84c; text-decoration:none; }
-        a:hover { text-decoration:underline; }
+        body { background:#0a0a0a; color:#f5f0eb; font-family:Arial,sans-serif; text-align:center; padding:100px; }
+        a { color:#c9a84c; }
     </style>
 </head>
 <body>
-    <h1>404 - Page non trouvée</h1>
-    <p>La page que vous recherchez n\'existe pas.</p>
+    <h1>404 — Page non trouvée</h1>
     <p><a href="' . URL_ROOT . '">Retour à l\'accueil</a></p>
 </body>
 </html>';
