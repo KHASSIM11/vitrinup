@@ -3,7 +3,7 @@
  * Vue d'accueil moderne pour Vitrinup.
  * Variables attendues :
  *   - $title    : titre de la page
- *   - $products : tableau des produits (id, nom, prix, prix_promo, chemin)
+ *   - $products : tableau des produits (id, nom, prix, prix_promo, image)
  */
 ?>
 <!DOCTYPE html>
@@ -170,7 +170,7 @@
         <div class="products-grid">
             <?php foreach ($products as $product): ?>
                 <div class="product-card">
-                    <img src="<?= htmlspecialchars($product['chemin']) ?>" alt="<?= htmlspecialchars($product['nom']) ?>">
+                    <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['nom']) ?>">
                     <div class="info">
                         <h3><?= htmlspecialchars($product['nom']) ?></h3>
                         <div class="price">
