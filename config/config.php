@@ -20,7 +20,7 @@ if (!defined('DB_PASS')) {
 
 // Site
 define('URL_ROOT',   'https://vitrinup.stokup.net');
-define('SITE_NAME',  'Chaussures Maroc');          // ← à personnaliser avec le vrai nom
+define('SITE_NAME',  'Vitrinup');          // ← à personnaliser avec le vrai nom
 define('WHATSAPP',   '212604273455');              // ← numéro WhatsApp de ton ami (format international sans +)
 
 // Upload images
