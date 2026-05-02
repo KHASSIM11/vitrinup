@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Produits — Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; }
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: 240px; height: 100vh;
+            background: #0a0a0a; color: #f5f0eb;
+            display: flex; flex-direction: column; z-index: 100;
+        }
+        .sidebar .brand { padding: 25px 20px; font-size: 1.2rem; font-weight: 700; color: #c9a84c; letter-spacing: 2px; border-bottom: 1px solid #1a1a1a; }
+        .sidebar .admin-info { padding: 15px 20px; font-size: 0.8rem; color: #666; border-bottom: 1px solid #1a1a1a; }
+        .sidebar nav { flex: 1; padding: 20px 0; }
+        .sidebar nav a { display: flex; align-items: center; gap: 10px; padding: 12px 20px; color: #888; text-decoration: none; font-size: 0.9rem; transition: all 0.2s; }
+        .sidebar nav a:hover, .sidebar nav a.active { background: #141414; color: #c9a84c; border-left: 3px solid #c9a84c; }
+        .sidebar .logout { padding: 20px; border-top: 1px solid #1a1a1a; }
+        .sidebar .logout a { color: #666; text-decoration: none; font-size: 0.85rem; }
+        .sidebar .logout a:hover { color: #ff6b6b; }
+        .main { margin-left: 240px; padding: 30px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-header h1 { font-size: 1.8rem; }
+        .btn-add {
+            background: #c9a84c; color: #0a0a0a;
+            padding: 10px 22px; border-radius: 6px;
+            text-decoration: none; font-weight: 700;
+            font-size: 0.9rem; transition: background 0.2s;
+        }
+        .btn-add:hover { background: #e0bb6a; }
+        .section { background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 12px; font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #f5f5f5; font-size: 0.9rem; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+        .product-img { width: 55px; height: 55px; object-fit: cover; border-radius: 6px; background: #eee; }
+        .no-img { width: 55px; height: 55px; background: #eee; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-actif { background: #e8f5e9; color: #2e7d32; }
+        .badge-inactif { background: #ffebee; color: #c62828; }
+        .btn-action {
+            padding: 6px 14px; border-radius: 5px; font-size: 0.8rem;
+            font-weight: 600; text-decoration: none; border: none; cursor: pointer;
+            transition: opacity 0.2s; margin-right: 5px;
+        }
+        .btn-edit { background: #e3f2fd; color: #1565c0; }
+        .btn-edit:hover { opacity: 0.8; }
+        .btn-delete { background: #ffebee; color: #c62828; }
+        .btn-delete:hover { opacity: 0.8; }
+        .empty-msg { text-align: center; color: #aaa; padding: 40px; }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="brand"><?= htmlspecialchars(SITE_NAME) ?></div>
+    <div class="admin-info">👤 <?= htmlspecialchars($adminNom) ?></div>
+    <nav>
+        <a href="<?= URL_ROOT ?>/admin"><span>📊</span> Dashboard</a>
+        <a href="<?= URL_ROOT ?>/admin/produits" class="active"><span>👟</span> Produits</a>
+        <a href="<?= URL_ROOT ?>/admin/categories"><span>🗂️</span> Catégories</a>
+        <a href="<?= URL_ROOT ?>/admin/commandes"><span>📦</span> Commandes</a>
+        <a href="<?= URL_ROOT ?>" target="_blank"><span>🌐</span> Voir le site</a>
+    </nav>
+    <div class="logout"><a href="<?= URL_ROOT ?>/admin/logout">🚪 Déconnexion</a></div>
+</aside>
+
+<main class="main">
+    <div class="page-header">
+        <h1>👟 Produits</h1>
+        <a href="<?= URL_ROOT ?>/admin/produits/ajouter" class="btn-add">+ Ajouter un produit</a>
+    </div>
+
+    <div class="section">
+        <?php if (empty($produits)): ?>
+            <p class="empty-msg">Aucun produit. <a href="<?= URL_ROOT ?>/admin/produits/ajouter">Ajouter le premier</a></p>
+        <?php else: ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Nom</th>
+                        <th>Catégorie</th>
+                        <th>Prix</th>
+                        <th>Genre</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($produits as $p): ?>
+                        <tr>
+                            <td>
+                                <?php if ($p['image']): ?>
+                                    <img src="<?= htmlspecialchars(UPLOAD_URL . $p['image']) ?>" class="product-img" alt="">
+                                <?php else: ?>
+                                    <div class="no-img">👟</div>
+                                <?php endif; ?>
+                            </td>
+                            <td><strong><?= htmlspecialchars($p['nom']) ?></strong></td>
+                            <td><?= htmlspecialchars($p['categorie_nom'] ?? '—') ?></td>
+                            <td>
+                                <?php if ($p['prix_promo']): ?>
+                                    <span style="color:#e53935;font-weight:700"><?= number_format($p['prix_promo'], 0) ?> DH</span>
+                                    <del style="color:#aaa;font-size:0.85rem"><?= number_format($p['prix'], 0) ?> DH</del>
+                                <?php else: ?>
+                                    <?= number_format($p['prix'], 0) ?> DH
+                                <?php endif; ?>
+                            </td>
+                            <td><?= ucfirst($p['genre']) ?></td>
+                            <td><span class="badge badge-<?= $p['statut'] ?>"><?= ucfirst($p['statut']) ?></span></td>
+                            <td>
+                                <a href="<?= URL_ROOT ?>/admin/produits/modifier/<?= $p['id'] ?>" class="btn-action btn-edit">✏️ Modifier</a>
+                                <a href="<?= URL_ROOT ?>/admin/produits/supprimer/<?= $p['id'] ?>"
+                                   class="btn-action btn-delete"
+                                   onclick="return confirm('Supprimer ce produit ?')">🗑️ Supprimer</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </div>
+</main>
+
+</body>
+</html>
