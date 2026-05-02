@@ -3,7 +3,7 @@
  * Vue d'accueil moderne pour Vitrinup.
  * Variables attendues :
  *   - $title    : titre de la page
- *   - $products : tableau des produits (id, nom, prix, prix_promo, image)
+ *   - $produits : tableau des produits (id, nom, prix, prix_promo, image)
  */
 ?>
 <!DOCTYPE html>
@@ -168,22 +168,22 @@
     <section class="products-section">
         <h2>Nouveautés</h2>
         <div class="products-grid">
-            <?php foreach ($products as $product): ?>
+            <?php foreach ($produits as $produit): ?>
                 <div class="product-card">
-                    <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['nom']) ?>">
+                    <img src="<?= $produit['image'] ? htmlspecialchars(UPLOAD_URL . $produit['image']) : 'https://via.placeholder.com/400x300/0a0a0a/c9a84c?text=Photo' ?>" alt="<?= htmlspecialchars($produit['nom']) ?>">
                     <div class="info">
-                        <h3><?= htmlspecialchars($product['nom']) ?></h3>
+                        <h3><?= htmlspecialchars($produit['nom']) ?></h3>
                         <div class="price">
-                            <?php if (!empty($product['prix_promo'])): ?>
-                                <span class="promo"><?= number_format($product['prix_promo'], 2, ',', ' ') ?> DH</span>
-                                <del><?= number_format($product['prix'], 2, ',', ' ') ?> DH</del>
+                            <?php if (!empty($produit['prix_promo'])): ?>
+                                <span class="promo"><?= number_format($produit['prix_promo'], 2, ',', ' ') ?> DH</span>
+                                <del><?= number_format($produit['prix'], 2, ',', ' ') ?> DH</del>
                             <?php else: ?>
-                                <?= number_format($product['prix'], 2, ',', ' ') ?> DH
+                                <?= number_format($produit['prix'], 2, ',', ' ') ?> DH
                             <?php endif; ?>
                         </div>
                     </div>
                     <?php
-                        $whatsappText = "Bonjour, je suis intéressé par : " . $product['nom'];
+                        $whatsappText = "Bonjour, je suis intéressé par : " . $produit['nom'];
                         $whatsappLink = "https://wa.me/" . WHATSAPP . "?text=" . rawurlencode($whatsappText);
                     ?>
                     <a href="<?= $whatsappLink ?>" target="_blank" class="whatsapp-btn">WhatsApp</a>
