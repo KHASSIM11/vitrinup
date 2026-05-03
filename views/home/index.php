@@ -169,7 +169,7 @@
         <h2>Nouveautés</h2>
         <div class="products-grid">
             <?php foreach ($produits as $produit): ?>
-                <div class="product-card">
+                <a href="<?= URL_ROOT ?>/produit/<?= $produit['slug'] ?>" class="product-card" style="text-decoration:none;">
                     <img src="<?= $produit['image'] ? htmlspecialchars(UPLOAD_URL . $produit['image']) : 'https://via.placeholder.com/400x300/0a0a0a/c9a84c?text=Photo' ?>" alt="<?= htmlspecialchars($produit['nom']) ?>">
                     <div class="info">
                         <h3><?= htmlspecialchars($produit['nom']) ?></h3>
@@ -182,12 +182,8 @@
                             <?php endif; ?>
                         </div>
                     </div>
-                    <?php
-                        $whatsappText = "Bonjour, je suis intéressé par : " . $produit['nom'];
-                        $whatsappLink = "https://wa.me/" . WHATSAPP . "?text=" . rawurlencode($whatsappText);
-                    ?>
-                    <a href="<?= $whatsappLink ?>" target="_blank" class="whatsapp-btn">WhatsApp</a>
-                </div>
+                    <span class="whatsapp-btn">Voir le produit</span>
+                </a>
             <?php endforeach; ?>
         </div>
     </section>

@@ -356,7 +356,7 @@
                     $whatsappText = "Bonjour, je suis intéressé par : " . $produit['nom'];
                     $whatsappLink = "https://wa.me/" . WHATSAPP . "?text=" . rawurlencode($whatsappText);
                 ?>
-                <div class="product-card">
+                <a href="<?= URL_ROOT ?>/produit/<?= $produit['slug'] ?>" class="product-card" style="text-decoration:none;">
                     <div class="img-wrap">
                         <img src="<?= $image ?>" alt="<?= htmlspecialchars($produit['nom']) ?>">
                         <?php if (!empty($produit['genre'])): ?>
@@ -380,10 +380,10 @@
                             <?php endif; ?>
                         </div>
                     </div>
-                    <a href="<?= $whatsappLink ?>" target="_blank" class="btn-whatsapp">
-                        📲 Commander via WhatsApp
-                    </a>
-                </div>
+                    <span class="btn-whatsapp">
+                        📲 Voir le produit
+                    </span>
+                </a>
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
