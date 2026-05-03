@@ -296,11 +296,21 @@
 <body>
 
 <!-- HEADER -->
+<?php
+// Récupérer le nombre d'articles dans le panier
+$panierCount = 0;
+if (isset($_SESSION['panier'])) {
+    foreach ($_SESSION['panier'] as $item) {
+        $panierCount += $item['quantite'];
+    }
+}
+?>
 <header>
     <a href="<?= URL_ROOT ?>" class="logo"><?= htmlspecialchars(SITE_NAME) ?></a>
     <nav>
         <a href="<?= URL_ROOT ?>">Accueil</a>
         <a href="<?= URL_ROOT ?>/catalogue">Catalogue</a>
+        <a href="<?= URL_ROOT ?>/panier">🛒 Panier<?= $panierCount > 0 ? ' <span style="background:#c9a84c;color:#0a0a0a;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">' . $panierCount . '</span>' : '' ?></a>
         <a href="https://wa.me/<?= WHATSAPP ?>" target="_blank">WhatsApp</a>
     </nav>
 </header>

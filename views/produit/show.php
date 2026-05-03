@@ -237,6 +237,44 @@
             cursor: not-allowed;
         }
 
+        /* ── QUANTITÉ ── */
+        .quantite-section h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: var(--text-light);
+        }
+        .quantite-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .quantite-selector button {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        .quantite-selector button:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .quantite-selector input {
+            width: 60px;
+            height: 40px;
+            text-align: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
         /* ── PRODUITS SIMILAIRES ── */
         .similaires {
             padding: 60px 40px;
@@ -415,10 +453,25 @@
         </div>
         <?php endif; ?>
 
-        <!-- BOUTON WHATSAPP -->
-        <a href="#" id="btnWhatsApp" class="btn-whatsapp" onclick="commanderWhatsApp(event)">
-            📲 Commander via WhatsApp
-        </a>
+        <!-- FORMULAIRE AJOUT PANIER -->
+        <form method="POST" action="<?= URL_ROOT ?>/panier/ajouter" id="formPanier">
+            <input type="hidden" name="produit_id" value="<?= $produit['id'] ?>">
+            <input type="hidden" name="redirect" value="panier">
+            
+            <!-- Quantité -->
+            <div class="quantite-section" style="margin-bottom:20px;">
+                <h3>Quantité</h3>
+                <div class="quantite-selector">
+                    <button type="button" onclick="changeQuantite(-1)">−</button>
+                    <input type="number" name="quantite" id="quantite" value="1" min="1" max="10" readonly>
+                    <button type="button" onclick="changeQuantite(1)">+</button>
+                </div>
+            </div>
+            
+            <button type="submit" id="btnAjouter" class="btn-whatsapp" style="width:100%; border:none; cursor:pointer;">
+                🛒 Ajouter au panier
+            </button>
+        </form>
     </div>
 </div>
 
@@ -473,30 +526,37 @@ function selectTaille(btn) {
     tailleSelectionnee = btn.dataset.taille;
 }
 
-function commanderWhatsApp(e) {
-    e.preventDefault();
-    
+function changeQuantite(delta) {
+    const input = document.getElementById('quantite');
+    let val = parseInt(input.value) + delta;
+    if (val < 1) val = 1;
+    if (val > 10) val = 10;
+    input.value = val;
+}
+
+// Validation avant soumission
+document.getElementById('formPanier').addEventListener('submit', function(e) {
     <?php if (!empty($tailles)): ?>
     if (!tailleSelectionnee) {
-        alert('Veuillez sélectionner une pointure avant de commander.');
-        return;
+        e.preventDefault();
+        alert('Veuillez sélectionner une pointure avant d\'ajouter au panier.');
+        return false;
     }
+    // Ajouter la taille au formulaire
+    const inputTaille = document.createElement('input');
+    inputTaille.type = 'hidden';
+    inputTaille.name = 'taille';
+    inputTaille.value = tailleSelectionnee;
+    this.appendChild(inputTaille);
+    <?php else: ?>
+    // Si pas de tailles, ajouter une valeur par défaut
+    const inputTaille = document.createElement('input');
+    inputTaille.type = 'hidden';
+    inputTaille.name = 'taille';
+    inputTaille.value = 'Unique';
+    this.appendChild(inputTaille);
     <?php endif; ?>
-    
-    const produit = "<?= addslashes($produit['nom']) ?>";
-    const prix = "<?= !empty($produit['prix_promo']) ? number_format($produit['prix_promo'], 0, ',', ' ') : number_format($produit['prix'], 0, ',', ' ') ?> DH";
-    
-    let message = `Bonjour, je suis intéressé par ce produit :\n\n`;
-    message += `👟 ${produit}\n`;
-    message += `💰 ${prix}\n`;
-    <?php if (!empty($tailles)): ?>
-    message += `📏 Pointure : ${tailleSelectionnee}\n`;
-    <?php endif; ?>
-    message += `\n${window.location.href}`;
-    
-    const url = `https://wa.me/<?= WHATSAPP ?>?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
-}
+});
 </script>
 
 </body>

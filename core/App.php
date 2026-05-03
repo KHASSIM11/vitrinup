@@ -31,6 +31,37 @@ class App {
             $this->controller = 'ContactController';
 
         // ----------------------------------------------------------------
+        // ROUTES PANIER
+        // ----------------------------------------------------------------
+        } elseif ($segment === 'panier') {
+            $this->controller = 'PanierController';
+            $action = $url[1] ?? 'index';
+            
+            switch ($action) {
+                case 'ajouter':
+                    $this->method = 'ajouter';
+                    break;
+                case 'modifier':
+                    $this->method = 'modifier';
+                    break;
+                case 'supprimer':
+                    $this->method = 'supprimer';
+                    break;
+                case 'vider':
+                    $this->method = 'vider';
+                    break;
+                case 'commander':
+                    $this->method = 'commander';
+                    break;
+                case 'count':
+                    $this->method = 'count';
+                    break;
+                default:
+                    $this->method = 'index';
+                    break;
+            }
+
+        // ----------------------------------------------------------------
         // ROUTES ADMIN
         // ----------------------------------------------------------------
         } elseif ($segment === 'admin') {

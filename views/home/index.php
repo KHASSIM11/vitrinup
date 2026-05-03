@@ -157,6 +157,27 @@
 </head>
 <body>
 
+<?php
+// Récupérer le nombre d'articles dans le panier
+$panierCount = 0;
+if (isset($_SESSION['panier'])) {
+    foreach ($_SESSION['panier'] as $item) {
+        $panierCount += $item['quantite'];
+    }
+}
+?>
+
+    <!-- HEADER -->
+    <header style="position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(10,10,10,0.95);border-bottom:1px solid #222;padding:15px 40px;display:flex;justify-content:space-between;align-items:center;">
+        <a href="<?= URL_ROOT ?>" style="font-size:1.5rem;font-weight:700;color:#c9a84c;letter-spacing:2px;text-decoration:none;"><?= htmlspecialchars(SITE_NAME) ?></a>
+        <nav>
+            <a href="<?= URL_ROOT ?>" style="margin-left:25px;color:#f5f0eb;font-size:0.95rem;text-decoration:none;transition:color 0.2s;">Accueil</a>
+            <a href="<?= URL_ROOT ?>/catalogue" style="margin-left:25px;color:#f5f0eb;font-size:0.95rem;text-decoration:none;transition:color 0.2s;">Catalogue</a>
+            <a href="<?= URL_ROOT ?>/panier" style="margin-left:25px;color:#f5f0eb;font-size:0.95rem;text-decoration:none;transition:color 0.2s;">🛒 Panier<?= $panierCount > 0 ? ' <span style="background:#c9a84c;color:#0a0a0a;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">' . $panierCount . '</span>' : '' ?></a>
+            <a href="https://wa.me/<?= WHATSAPP ?>" target="_blank" style="margin-left:25px;color:#f5f0eb;font-size:0.95rem;text-decoration:none;transition:color 0.2s;">WhatsApp</a>
+        </nav>
+    </header>
+
     <!-- HERO SECTION -->
     <section class="hero">
         <h1><?= htmlspecialchars(SITE_NAME) ?></h1>
