@@ -33,6 +33,14 @@ class App {
         // ----------------------------------------------------------------
         // ROUTES PANIER
         // ----------------------------------------------------------------
+        } elseif ($segment === 'recherche') {
+            $this->controller = 'RechercheController';
+            $action = $url[1] ?? 'index';
+            
+            if ($action === 'suggest') {
+                $this->method = 'suggest';
+            }
+
         } elseif ($segment === 'panier') {
             $this->controller = 'PanierController';
             $action = $url[1] ?? 'index';

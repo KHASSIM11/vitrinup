@@ -307,11 +307,19 @@ if (isset($_SESSION['panier'])) {
 ?>
 <header>
     <a href="<?= URL_ROOT ?>" class="logo"><?= htmlspecialchars(SITE_NAME) ?></a>
+    
+    <!-- Barre de recherche dans header -->
+    <form action="<?= URL_ROOT ?>/recherche" method="GET" style="flex:1;max-width:400px;margin:0 30px;">
+        <div style="display:flex;background:#141414;border:1px solid #222;border-radius:25px;overflow:hidden;">
+            <input type="text" name="q" placeholder="Rechercher..." style="flex:1;padding:10px 20px;background:transparent;border:none;color:#f5f0eb;outline:none;">
+            <button type="submit" style="padding:0 20px;background:transparent;border:none;color:#c9a84c;cursor:pointer;">🔍</button>
+        </div>
+    </form>
+    
     <nav>
         <a href="<?= URL_ROOT ?>">Accueil</a>
         <a href="<?= URL_ROOT ?>/catalogue">Catalogue</a>
         <a href="<?= URL_ROOT ?>/panier">🛒 Panier<?= $panierCount > 0 ? ' <span style="background:#c9a84c;color:#0a0a0a;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">' . $panierCount . '</span>' : '' ?></a>
-        <a href="https://wa.me/<?= WHATSAPP ?>" target="_blank">WhatsApp</a>
     </nav>
 </header>
 
