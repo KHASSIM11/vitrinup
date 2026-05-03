@@ -19,6 +19,10 @@ class RechercheController extends Controller {
         
         if (!empty($q)) {
             // Recherche dans les produits (nom, description, marque)
+            $searchTerm = '%' . $q . '%';
+            $exactTerm = $q;
+            $startTerm = $q . '%';
+            
             $sql = "SELECT p.id, p.nom, p.slug, p.prix, p.prix_promo, p.genre, p.marque, p.description,
                            c.nom AS categorie_nom,
                            (SELECT chemin FROM images_produits WHERE produit_id = p.id AND est_principale = 1 LIMIT 1) AS image
@@ -26,10 +30,10 @@ class RechercheController extends Controller {
                     LEFT JOIN categories c ON p.categorie_id = c.id
                     WHERE p.statut = 'actif'
                       AND (
-                          p.nom LIKE :q 
-                          OR p.marque LIKE :q 
-                          OR p.description LIKE :q
-                          OR c.nom LIKE :q
+                          p.nom LIKE :q1 
+                          OR p.marque LIKE :q2 
+                          OR p.description LIKE :q3
+                          OR c.nom LIKE :q4
                       )
                     ORDER BY 
                         CASE 
@@ -40,9 +44,12 @@ class RechercheController extends Controller {
                         p.nom ASC";
             
             $query = $db->query($sql);
-            $query->bind(':q', '%' . $q . '%');
-            $query->bind(':qExact', $q);
-            $query->bind(':qStart', $q . '%');
+            $query->bind(':q1', $searchTerm);
+            $query->bind(':q2', $searchTerm);
+            $query->bind(':q3', $searchTerm);
+            $query->bind(':q4', $searchTerm);
+            $query->bind(':qExact', $exactTerm);
+            $query->bind(':qStart', $startTerm);
             $resultats = $query->resultSet();
             $nombreResultats = count($resultats);
         }
