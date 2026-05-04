@@ -142,9 +142,84 @@
             padding:20px;
             font-size:0.9rem;
         }
-        footer a.whatsapp {
-            color:var(--accent-gold);
-            font-weight:bold;
+        /* Menu mobile */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1002;
+        }
+        .mobile-menu-btn span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background: var(--text-light);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+        
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: var(--bg-dark);
+            border-left: 1px solid #222;
+            z-index: 1001;
+            transition: right 0.3s ease;
+            flex-direction: column;
+            padding: 80px 25px 30px;
+        }
+        .mobile-menu.active {
+            right: 0;
+        }
+        .mobile-menu a {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            padding: 15px 0;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mobile-menu a .badge {
+            background: var(--accent-gold);
+            color: var(--text-dark);
+            font-size: 0.8rem;
+            padding: 3px 10px;
+            border-radius: 15px;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+        .overlay.active {
+            display: block;
         }
 
         @media (max-width:768px) {
@@ -152,6 +227,9 @@
             .hero p {font-size:1.2rem;}
             .categories {flex-direction:column;}
             .category {flex:1 1 100%; height:150px;}
+            header nav { display: none; }
+            .mobile-menu-btn { display: flex; }
+            .mobile-menu { display: flex; }
         }
     </style>
 </head>
@@ -174,9 +252,21 @@ if (isset($_SESSION['panier'])) {
             <a href="<?= URL_ROOT ?>" style="margin-left:25px;color:#f5f0eb;font-size:0.95rem;text-decoration:none;transition:color 0.2s;">Accueil</a>
             <a href="<?= URL_ROOT ?>/catalogue" style="margin-left:25px;color:#f5f0eb;font-size:0.95rem;text-decoration:none;transition:color 0.2s;">Catalogue</a>
             <a href="<?= URL_ROOT ?>/panier" style="margin-left:25px;color:#f5f0eb;font-size:0.95rem;text-decoration:none;transition:color 0.2s;">🛒 Panier<?= $panierCount > 0 ? ' <span style="background:#c9a84c;color:#0a0a0a;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">' . $panierCount . '</span>' : '' ?></a>
-            <a href="https://wa.me/<?= WHATSAPP ?>" target="_blank" style="margin-left:25px;color:#f5f0eb;font-size:0.95rem;text-decoration:none;transition:color 0.2s;">WhatsApp</a>
         </nav>
+        <button class="mobile-menu-btn" onclick="toggleMenu()" style="background:transparent;border:none;cursor:pointer;">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </header>
+    
+    <!-- Menu mobile -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="<?= URL_ROOT ?>" onclick="toggleMenu()">Accueil →</a>
+        <a href="<?= URL_ROOT ?>/catalogue" onclick="toggleMenu()">Catalogue →</a>
+        <a href="<?= URL_ROOT ?>/panier" onclick="toggleMenu()">🛒 Panier <?= $panierCount > 0 ? '<span class="badge">' . $panierCount . '</span>' : '→' ?></a>
+    </div>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
     <!-- HERO SECTION -->
     <section class="hero">
@@ -224,9 +314,27 @@ if (isset($_SESSION['panier'])) {
 
     <!-- FOOTER -->
     <footer>
-        <p><?= htmlspecialchars(SITE_NAME) ?> – <a class="whatsapp" href="https://wa.me/<?= WHATSAPP ?>" target="_blank">WhatsApp : <?= WHATSAPP ?></a></p>
+        <p><?= htmlspecialchars(SITE_NAME) ?></p>
         <p>&copy; <?= date('Y') ?> Tous droits réservés.</p>
     </footer>
+
+<script>
+function toggleMenu() {
+    const menu = document.getElementById('mobileMenu');
+    const overlay = document.getElementById('overlay');
+    const btn = document.querySelector('.mobile-menu-btn');
+    menu.classList.toggle('active');
+    overlay.classList.toggle('active');
+    btn.classList.toggle('active');
+    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const menu = document.getElementById('mobileMenu');
+        if (menu.classList.contains('active')) toggleMenu();
+    }
+});
+</script>
 
 </body>
 </html>
