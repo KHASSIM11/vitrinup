@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var array  $commande Détail de la commande
+ * @var string $adminNom Nom de l'admin connecté
+ */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>

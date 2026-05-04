@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var array  $commandes      Liste des commandes
+ * @var string $statutActif    Statut actuellement filtré
+ * @var array  $statsParStatut Statistiques par statut
+ * @var string $adminNom       Nom de l'admin connecté
+ */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
