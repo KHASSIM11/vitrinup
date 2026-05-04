@@ -504,7 +504,7 @@
 
 <!-- FOOTER -->
 <footer>
-    <p><?= htmlspecialchars(SITE_NAME) ?> — <a href="https://wa.me/<?= WHATSAP ?>?">WhatsApp</a></p>
+    <p><?= htmlspecialchars(SITE_NAME) ?> — <a href="https://wa.me/<?= WHATSAPP ?>">WhatsApp</a></p>
     <p>&copy; <?= date('Y') ?> Tous droits réservés.</p>
 </footer>
 

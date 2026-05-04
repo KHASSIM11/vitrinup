@@ -154,36 +154,118 @@ class PanierController extends Controller {
     }
     
     /**
-     * Commande WhatsApp avec tout le panier
+     * Affiche le formulaire de commande ou traite la soumission
      */
     public function commander(): void {
         if ($this->panier->estVide()) {
             header('Location: ' . URL_ROOT . '/panier');
             exit;
         }
-        
+
+        // Si le formulaire est soumis
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->traiterCommande();
+            return;
+        }
+
         $articles = $this->panier->getArticles();
         $total = $this->panier->getTotal();
-        
-        // Construire le message WhatsApp
-        $message = "Bonjour, je souhaite commander les articles suivants :\n\n";
+        $economie = $this->panier->getEconomie();
+
+        $data = [
+            'title' => 'Finaliser la commande — ' . SITE_NAME,
+            'articles' => $articles,
+            'nombreArticles' => $this->panier->getNombreArticles(),
+            'total' => $total,
+            'economie' => $economie,
+        ];
+
+        $this->view('panier/commander', $data);
+    }
+
+    /**
+     * Traite et sauvegarde la commande en base de données
+     */
+    private function traiterCommande(): void {
+        $nom       = trim($_POST['nom'] ?? '');
+        $telephone = trim($_POST['telephone'] ?? '');
+        $email     = trim($_POST['email'] ?? '');
+        $adresse   = trim($_POST['adresse'] ?? '');
+        $ville     = trim($_POST['ville'] ?? '');
+        $notes     = trim($_POST['notes'] ?? '');
+
+        if (empty($nom) || empty($telephone)) {
+            $_SESSION['flash_error'] = 'Veuillez remplir votre nom et votre téléphone.';
+            header('Location: ' . URL_ROOT . '/panier/commander');
+            exit;
+        }
+
+        $articles = $this->panier->getArticles();
+        $total = $this->panier->getTotal();
+
+        // Construire le message détaillé
+        $message = "👤 Nom : $nom\n📞 Tél : $telephone\n";
+        if (!empty($email)) $message .= "📧 Email : $email\n";
+        if (!empty($adresse)) $message .= "📍 Adresse : $adresse\n";
+        if (!empty($ville)) $message .= "🏙️ Ville : $ville\n";
+        $message .= "\n🛒 ARTICLES COMMANDÉS :\n";
         
         foreach ($articles as $article) {
-            $message .= "👟 {$article['nom']}\n";
-            $message .= "📏 Taille : {$article['taille']}\n";
-            $message .= "🔢 Qté : {$article['quantite']}\n";
-            $message .= "💰 " . number_format($article['prix'], 0, ',', ' ') . " DH / unité\n";
-            $message .= "─ ─ ─ ─ ─ ─ ─ ─\n";
+            $message .= "• {$article['nom']} — Taille {$article['taille']} × {$article['quantite']} = " . number_format($article['prix'] * $article['quantite'], 0, ',', ' ') . " DH\n";
         }
         
-        $message .= "\n💵 TOTAL : " . number_format($total, 0, ',', ' ') . " DH\n";
-        $message .= "\nMerci !";
+        $message .= "\n💰 TOTAL : " . number_format($total, 0, ',', ' ') . " DH\n";
+        $message .= "🚚 Paiement à la livraison\n";
         
-        $whatsappUrl = "https://wa.me/" . WHATSAPP . "?text=" . urlencode($message);
+        if (!empty($notes)) {
+            $message .= "\n📝 Notes : $notes\n";
+        }
+
+        // Sauvegarder chaque article comme une commande séparée
+        foreach ($articles as $article) {
+            $this->db->query(
+                "INSERT INTO commandes (produit_id, client_nom, client_tel, taille, message, statut)
+                 VALUES (:produit_id, :client_nom, :client_tel, :taille, :message, 'nouveau')"
+            )
+            ->bind(':produit_id', $article['produit_id'])
+            ->bind(':client_nom', $nom)
+            ->bind(':client_tel', $telephone)
+            ->bind(':taille', $article['taille'])
+            ->bind(':message', $message)
+            ->execute();
+        }
+
+        // Construire le message WhatsApp
+        $whatsappMessage = "🛒 *NOUVELLE COMMANDE* 🛒\n\n";
+        $whatsappMessage .= "👤 *Client :* $nom\n";
+        $whatsappMessage .= "📞 *Tél :* $telephone\n";
+        if (!empty($email)) $whatsappMessage .= "📧 *Email :* $email\n";
+        if (!empty($adresse)) $whatsappMessage .= "📍 *Adresse :* $adresse\n";
+        if (!empty($ville)) $whatsappMessage .= "🏙️ *Ville :* $ville\n\n";
+        $whatsappMessage .= "─ ─ ─ ─ ─ ─ ─ ─ ─ ─\n\n";
         
-        // Vider le panier après commande
+        foreach ($articles as $article) {
+            $whatsappMessage .= "👟 {$article['nom']}\n";
+            $whatsappMessage .= "📏 Taille : {$article['taille']}\n";
+            $whatsappMessage .= "🔢 Qté : {$article['quantite']}\n";
+            $whatsappMessage .= "💰 " . number_format($article['prix'], 0, ',', ' ') . " DH\n\n";
+        }
+        
+        $whatsappMessage .= "💵 *TOTAL : " . number_format($total, 0, ',', ' ') . " DH*\n";
+        $whatsappMessage .= "🚚 *Paiement à la livraison*\n";
+        
+        if (!empty($notes)) {
+            $whatsappMessage .= "\n📝 *Notes :* $notes\n";
+        }
+
+        $whatsappUrl = "https://wa.me/" . WHATSAPP . "?text=" . urlencode($whatsappMessage);
+        
+        // Vider le panier
         $this->panier->vider();
         
+        $_SESSION['flash_success'] = '✅ Commande enregistrée ! Vous allez être redirigé vers WhatsApp.';
+        
+        // Rediriger vers WhatsApp
         header('Location: ' . $whatsappUrl);
         exit;
     }
