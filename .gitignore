@@ -1,4 +1,5 @@
 .env.deploy
 .aider*
 config/.env.php
+ollama-agent-coder/
 ``
