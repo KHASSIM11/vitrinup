@@ -66,6 +66,97 @@
             border-radius: 10px;
             margin-left: 5px;
         }
+        
+        /* Navigation desktop */
+        .desktop-nav a .badge {
+            background: var(--accent);
+            color: var(--text-dark);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+        
+        /* Menu mobile */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1002;
+        }
+        .mobile-menu-btn span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background: var(--text-light);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+        
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: var(--bg-dark);
+            border-left: 1px solid var(--border);
+            z-index: 1001;
+            transition: right 0.3s ease;
+            flex-direction: column;
+            padding: 80px 25px 30px;
+        }
+        .mobile-menu.active {
+            right: 0;
+        }
+        .mobile-menu a {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mobile-menu a .badge {
+            background: var(--accent);
+            color: var(--text-dark);
+            font-size: 0.8rem;
+            padding: 3px 10px;
+            border-radius: 15px;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+        .overlay.active {
+            display: block;
+        }
 
         /* ── BARRE DE RECHERCHE ── */
         .search-section {
@@ -299,6 +390,9 @@
         }
         @media (max-width: 768px) {
             header { padding: 15px 20px; }
+            header nav { display: none; }
+            .mobile-menu-btn { display: flex; }
+            .mobile-menu { display: flex; }
             .search-section { padding: 40px 20px; }
             .results-section { padding: 30px 20px; }
             .produits-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
@@ -316,14 +410,25 @@
 <!-- HEADER -->
 <header>
     <a href="<?= URL_ROOT ?>" class="logo"><?= htmlspecialchars(SITE_NAME) ?></a>
-    <nav>
+    <nav class="desktop-nav">
         <a href="<?= URL_ROOT ?>">Accueil</a>
         <a href="<?= URL_ROOT ?>/catalogue">Catalogue</a>
-        <a href="<?= URL_ROOT ?>/panier" class="panier-icon">
-            🛒 Panier<?= $panierCount > 0 ? '<span class="badge">' . $panierCount . '</span>' : '' ?>
-        </a>
+        <a href="<?= URL_ROOT ?>/panier">🛒 Panier<?= $panierCount > 0 ? ' <span class="badge">' . $panierCount . '</span>' : '' ?></a>
     </nav>
+    <button class="mobile-menu-btn" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
 </header>
+
+<!-- Menu mobile -->
+<div class="mobile-menu" id="mobileMenu">
+    <a href="<?= URL_ROOT ?>" onclick="toggleMenu()">Accueil →</a>
+    <a href="<?= URL_ROOT ?>/catalogue" onclick="toggleMenu()">Catalogue →</a>
+    <a href="<?= URL_ROOT ?>/panier" onclick="toggleMenu()">🛒 Panier <?= $panierCount > 0 ? '<span class="badge">' . $panierCount . '</span>' : '→' ?></a>
+</div>
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
 <!-- BARRE DE RECHERCHE -->
 <section class="search-section">
@@ -447,5 +552,22 @@
     <p>&copy; <?= date('Y') ?> Tous droits réservés.</p>
 </footer>
 
+<script>
+function toggleMenu() {
+    const menu = document.getElementById('mobileMenu');
+    const overlay = document.getElementById('overlay');
+    const btn = document.querySelector('.mobile-menu-btn');
+    menu.classList.toggle('active');
+    overlay.classList.toggle('active');
+    btn.classList.toggle('active');
+    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const menu = document.getElementById('mobileMenu');
+        if (menu.classList.contains('active')) toggleMenu();
+    }
+});
+</script>
 </body>
 </html>

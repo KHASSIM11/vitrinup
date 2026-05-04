@@ -54,6 +54,147 @@
             transition: color 0.2s;
         }
         header nav a:hover { color: var(--accent); }
+        header nav a .badge {
+            background: var(--accent);
+            color: var(--text-dark);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+        
+        /* Barre de recherche header */
+        .header-search {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 30px;
+        }
+        .header-search div {
+            display: flex;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            overflow: hidden;
+        }
+        .header-search input {
+            flex: 1;
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            outline: none;
+        }
+        .header-search button {
+            padding: 0 20px;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+        }
+        
+        /* Menu mobile */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1002;
+        }
+        .mobile-menu-btn span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background: var(--text-light);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        .mobile-menu-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+        .mobile-menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .mobile-menu-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+        
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: var(--bg-dark);
+            border-left: 1px solid var(--border);
+            z-index: 1001;
+            transition: right 0.3s ease;
+            flex-direction: column;
+            padding: 80px 25px 30px;
+        }
+        .mobile-menu.active {
+            right: 0;
+        }
+        .mobile-menu form {
+            display: flex;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .mobile-menu input {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            outline: none;
+        }
+        .mobile-menu button {
+            padding: 0 20px;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+        }
+        .mobile-menu a {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mobile-menu a .badge {
+            background: var(--accent);
+            color: var(--text-dark);
+            font-size: 0.8rem;
+            padding: 3px 10px;
+            border-radius: 15px;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+        .overlay.active {
+            display: block;
+        }
 
         /* ── PAGE TITLE ── */
         .page-title {
@@ -284,6 +425,10 @@
         }
         @media (max-width: 768px) {
             header { padding: 15px 20px; }
+            .header-search { display: none; }
+            .desktop-nav { display: none; }
+            .mobile-menu-btn { display: flex; }
+            .mobile-menu { display: flex; }
             .page-title, .filtres, .catalogue { padding-left: 20px; padding-right: 20px; }
             .produits-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
             .product-card .img-wrap { height: 180px; }
@@ -308,19 +453,40 @@ if (isset($_SESSION['panier'])) {
 <header>
     <a href="<?= URL_ROOT ?>" class="logo"><?= htmlspecialchars(SITE_NAME) ?></a>
     
-    <!-- Barre de recherche dans header -->
-    <form action="<?= URL_ROOT ?>/recherche" method="GET" style="flex:1;max-width:400px;margin:0 30px;">
-        <div style="display:flex;background:#141414;border:1px solid #222;border-radius:25px;overflow:hidden;">
-            <input type="text" name="q" placeholder="Rechercher..." style="flex:1;padding:10px 20px;background:transparent;border:none;color:#f5f0eb;outline:none;">
-            <button type="submit" style="padding:0 20px;background:transparent;border:none;color:#c9a84c;cursor:pointer;">🔍</button>
+    <!-- Barre de recherche desktop -->
+    <form class="header-search" action="<?= URL_ROOT ?>/recherche" method="GET">
+        <div>
+            <input type="text" name="q" placeholder="Rechercher..." autocomplete="off">
+            <button type="submit">🔍</button>
         </div>
     </form>
     
-    <nav>
+    <!-- Navigation desktop -->
+    <nav class="desktop-nav">
         <a href="<?= URL_ROOT ?>">Accueil</a>
         <a href="<?= URL_ROOT ?>/catalogue">Catalogue</a>
-        <a href="<?= URL_ROOT ?>/panier">🛒 Panier<?= $panierCount > 0 ? ' <span style="background:#c9a84c;color:#0a0a0a;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">' . $panierCount . '</span>' : '' ?></a>
+        <a href="<?= URL_ROOT ?>/panier">🛒 Panier<?= $panierCount > 0 ? ' <span class="badge">' . $panierCount . '</span>' : '' ?></a>
     </nav>
+    
+    <!-- Bouton menu mobile -->
+    <button class="mobile-menu-btn" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</header>
+
+<!-- Menu mobile -->
+<div class="mobile-menu" id="mobileMenu">
+    <form action="<?= URL_ROOT ?>/recherche" method="GET">
+        <input type="text" name="q" placeholder="Rechercher...">
+        <button type="submit">🔍</button>
+    </form>
+    <a href="<?= URL_ROOT ?>" onclick="toggleMenu()">Accueil →</a>
+    <a href="<?= URL_ROOT ?>/catalogue" onclick="toggleMenu()">Catalogue →</a>
+    <a href="<?= URL_ROOT ?>/panier" onclick="toggleMenu()">🛒 Panier <?= $panierCount > 0 ? '<span class="badge">' . $panierCount . '</span>' : '→' ?></a>
+</div>
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 </header>
 
 <!-- TITRE -->
@@ -421,6 +587,29 @@ function filtrerCategorie(id) {
     if (id)    url += 'categorie_id=' + id;
     window.location.href = url;
 }
+
+// Menu mobile
+function toggleMenu() {
+    const menu = document.getElementById('mobileMenu');
+    const overlay = document.getElementById('overlay');
+    const btn = document.querySelector('.mobile-menu-btn');
+    
+    menu.classList.toggle('active');
+    overlay.classList.toggle('active');
+    btn.classList.toggle('active');
+    
+    document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+}
+
+// Fermer avec Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const menu = document.getElementById('mobileMenu');
+        if (menu.classList.contains('active')) {
+            toggleMenu();
+        }
+    }
+});
 </script>
 
 </body>
