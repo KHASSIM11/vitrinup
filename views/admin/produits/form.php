@@ -155,7 +155,7 @@
                                     <img src="<?= htmlspecialchars(UPLOAD_URL . $img['chemin']) ?>" alt="">
                                     <form method="POST" action="<?= URL_ROOT ?>/admin/produits/supprimerImage" style="display:inline">
                                         <input type="hidden" name="image_id" value="<?= $img['id'] ?>">
-                                        <input type="hidden" name="produit_id" value="<?= $produit['id'] ?>">
+                                        <input type="hidden" name="produit_id" value="<?= isset($produit) ? $produit['id'] : '' ?>">
                                         <button type="submit" class="del-img" onclick="return confirm('Supprimer cette image ?')">×</button>
                                     </form>
                                 </div>
