@@ -86,6 +86,7 @@
         <a href="<?= URL_ROOT ?>/admin/produits" class="active"><span>👟</span> Produits</a>
         <a href="<?= URL_ROOT ?>/admin/categories"><span>🗂️</span> Catégories</a>
         <a href="<?= URL_ROOT ?>/admin/commandes"><span>📦</span> Commandes</a>
+        <a href="<?= URL_ROOT ?>/admin/stocks"><span>📋</span> Stocks</a>
         <a href="<?= URL_ROOT ?>" target="_blank"><span>🌐</span> Voir le site</a>
     </nav>
     <div class="logout"><a href="<?= URL_ROOT ?>/admin/logout">🚪 Déconnexion</a></div>

@@ -145,6 +145,7 @@
         <a href="<?= URL_ROOT ?>/admin/produits"><span class="icon">👟</span> Produits</a>
         <a href="<?= URL_ROOT ?>/admin/categories"><span class="icon">🗂️</span> Catégories</a>
         <a href="<?= URL_ROOT ?>/admin/commandes"><span class="icon">📦</span> Commandes</a>
+        <a href="<?= URL_ROOT ?>/admin/stocks"><span class="icon">📋</span> Stocks</a>
         <a href="<?= URL_ROOT ?>" target="_blank"><span class="icon">🌐</span> Voir le site</a>
     </nav>
     <div class="logout">
@@ -188,12 +189,6 @@
         <div class="stat-card">
             <div class="label">🚫 En rupture</div>
             <div class="value red"><?= $nbRupture ?></div>
-        </div>
-        <div class="stat-card">
-            <div class="label">📦 Voir tous les stocks</div>
-            <div class="value" style="font-size:1rem;margin-top:8px;">
-                <a href="<?= URL_ROOT ?>/admin/stocks" style="color:#c9a84c;text-decoration:none;font-weight:600;">Gérer les stocks →</a>
-            </div>
         </div>
     </div>
 
