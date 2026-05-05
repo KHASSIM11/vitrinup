@@ -77,7 +77,7 @@ class AdminStocksController extends Controller {
         if (!empty($produitIds)) {
             $idsStr = implode(',', $produitIds);
             $tailles = $this->db->query(
-                "SELECT produit_id, taille, stock FROM tailles_produits WHERE produit_id IN ($idsStr) ORDER BY taille ASC"
+                "SELECT id, produit_id, taille, stock FROM tailles_produits WHERE produit_id IN ($idsStr) ORDER BY taille ASC"
             )->resultSet();
             foreach ($tailles as $t) {
                 $taillesParProduit[$t['produit_id']][] = $t;

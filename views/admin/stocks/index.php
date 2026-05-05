@@ -291,23 +291,23 @@
                                 </span>
                             </td>
                             <td>
-                                <div class="tailles-list" id="tailles-<?= $p['id'] ?>">
-                                    <?php foreach ($tailles as $t): ?>
+                                <div class="tailles-list" id="tailles-<?= intval($p['id']) ?>">
+                                    <?php if (!empty($tailles)): foreach ($tailles as $t): ?>
                                         <div class="taille-item">
                                             <span><?= htmlspecialchars($t['taille']) ?>:</span>
                                             <input type="number" class="stock-input" value="<?= intval($t['stock']) ?>"
-                                                   min="0" data-taille-id="<?= $t['id'] ?>"
-                                                   data-produit-id="<?= $p['id'] ?>"
+                                                   min="0" data-taille-id="<?= intval($t['id']) ?>"
+                                                   data-produit-id="<?= intval($p['id']) ?>"
                                                    onchange="updateStock(this)">
-                                            <button class="btn-del-taille" onclick="deleteTaille(<?= $t['id'] ?>, <?= $p['id'] ?>)" title="Supprimer">✕</button>
+                                            <button class="btn-del-taille" onclick="deleteTaille(<?= intval($t['id']) ?>, <?= intval($p['id']) ?>)" title="Supprimer">✕</button>
                                         </div>
-                                    <?php endforeach; ?>
+                                    <?php endforeach; endif; ?>
                                 </div>
                                 <!-- Formulaire ajout taille -->
                                 <div class="add-taille-form">
-                                    <input type="text" placeholder="Taille" class="new-taille-input" id="new-taille-<?= $p['id'] ?>">
-                                    <input type="number" placeholder="Stock" class="new-stock-input" id="new-stock-<?= $p['id'] ?>" value="0" min="0">
-                                    <button onclick="addTaille(<?= $p['id'] ?>)">+ Ajouter</button>
+                                    <input type="text" placeholder="Taille" class="new-taille-input" id="new-taille-<?= intval($p['id']) ?>">
+                                    <input type="number" placeholder="Stock" class="new-stock-input" id="new-stock-<?= intval($p['id']) ?>" value="0" min="0">
+                                    <button onclick="addTaille(<?= intval($p['id']) ?>)">+ Ajouter</button>
                                 </div>
                             </td>
                         </tr>
