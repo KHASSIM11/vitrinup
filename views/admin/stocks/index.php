@@ -39,6 +39,37 @@
         .page-header h1 { font-size: 1.8rem; }
         .page-header .seuil-info { font-size: 0.85rem; color: #888; }
 
+        /* Cartes de navigation */
+        .nav-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+        .nav-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            text-decoration: none;
+            color: #1a1a1a;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            border: 2px solid transparent;
+        }
+        .nav-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border-color: #c9a84c;
+        }
+        .nav-card .icon { font-size: 2.5rem; }
+        .nav-card .title { font-size: 1.1rem; font-weight: 700; }
+        .nav-card .desc { font-size: 0.85rem; color: #888; }
+
         /* Stats */
         .stats-grid {
             display: grid;
@@ -84,8 +115,6 @@
         }
         .btn-filtre:hover { background: #e0e0e0; }
         .btn-filtre.actif { background: #c9a84c; color: #0a0a0a; }
-        .btn-filtre .count { background: rgba(0,0,0,0.1); padding: 1px 8px; border-radius: 10px; margin-left: 5px; font-size: 0.75rem; }
-        .btn-filtre.actif .count { background: rgba(0,0,0,0.2); }
 
         /* Section */
         .section { background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
@@ -178,6 +207,7 @@
         .flash-error { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; }
 
         @media (max-width: 900px) {
+            .nav-cards { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
@@ -186,7 +216,7 @@
 
 <aside class="sidebar">
     <div class="brand"><?= htmlspecialchars(SITE_NAME) ?></div>
-    <div class="admin-info">👤 <?= htmlspecialchars($adminNom) ?></div>
+    <div class="admin-info">👤 <?= htmlspecialchars($adminNom ?? '') ?></div>
     <nav>
         <a href="<?= URL_ROOT ?>/admin"><span>📊</span> Dashboard</a>
         <a href="<?= URL_ROOT ?>/admin/produits"><span>👟</span> Produits</a>
@@ -213,6 +243,25 @@
         <?php unset($_SESSION['flash_error']); ?>
     <?php endif; ?>
 
+    <!-- Cartes de navigation -->
+    <div class="nav-cards">
+        <a href="<?= URL_ROOT ?>/admin/stocks/entree" class="nav-card">
+            <div class="icon">📥</div>
+            <div class="title">Entrée de stock</div>
+            <div class="desc">Ajouter du stock manuellement</div>
+        </a>
+        <a href="<?= URL_ROOT ?>/admin/stocks/sortie" class="nav-card">
+            <div class="icon">📤</div>
+            <div class="title">Sortie de stock</div>
+            <div class="desc">Gérer les sorties liées aux commandes</div>
+        </a>
+        <a href="<?= URL_ROOT ?>/admin/stocks/historique" class="nav-card">
+            <div class="icon">📜</div>
+            <div class="title">Historique</div>
+            <div class="desc">Traçabilité des entrées et sorties</div>
+        </a>
+    </div>
+
     <!-- Stats -->
     <div class="stats-grid">
         <div class="stat-card">
@@ -236,7 +285,7 @@
     <!-- Filtres -->
     <div class="filtres">
         <form method="GET" action="<?= URL_ROOT ?>/admin/stocks">
-            <input type="text" name="search" placeholder="Rechercher un produit..." value="<?= htmlspecialchars($search) ?>">
+            <input type="text" name="search" placeholder="Rechercher un produit..." value="<?= htmlspecialchars($search ?? '') ?>">
             <button type="submit" class="btn-filtre actif">🔍 Rechercher</button>
             <a href="<?= URL_ROOT ?>/admin/stocks" class="btn-filtre">✕ Réinitialiser</a>
         </form>
@@ -406,7 +455,6 @@ function addTaille(produitId) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            // Recharger la page pour voir la nouvelle taille
             location.reload();
         } else {
             alert('Erreur : ' + (data.error || 'Inconnue'));

@@ -89,9 +89,6 @@ class App {
                 case 'produits':
                     $this->controller = 'AdminProduitsController';
                     $action = $url[2] ?? 'index';
-                    // /admin/produits/ajouter
-                    // /admin/produits/modifier/{id}
-                    // /admin/produits/supprimer/{id}
                     if (in_array($action, ['index', 'ajouter', 'modifier', 'supprimer', 'supprimerImage'])) {
                         $this->method = $action;
                         $this->params = isset($url[3]) ? [$url[3]] : [];
@@ -107,8 +104,9 @@ class App {
                 case 'stocks':
                     $this->controller = 'AdminStocksController';
                     $action = $url[2] ?? 'index';
-                    if (in_array($action, ['index', 'modifierStock', 'ajouterTaille', 'supprimerTaille'])) {
+                    if (in_array($action, ['index', 'entree', 'sortie', 'historique', 'modifierStock', 'ajouterTaille', 'supprimerTaille', 'ajouterEntree', 'ajouterSortie'])) {
                         $this->method = $action;
+                        $this->params = isset($url[3]) ? [$url[3]] : [];
                     }
                     break;
 

@@ -82,6 +82,27 @@ CREATE TABLE IF NOT EXISTS `commandes` (
     CONSTRAINT `fk_commande_produit` FOREIGN KEY (`produit_id`) REFERENCES `produits` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Table des mouvements de stock (traçabilité)
+CREATE TABLE IF NOT EXISTS `mouvements_stock` (
+    `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+    `produit_id` int(10) UNSIGNED NOT NULL,
+    `taille_id` int(10) UNSIGNED DEFAULT NULL,
+    `taille` varchar(20) NOT NULL,
+    `type` enum('entree','sortie','commande','annulation') NOT NULL,
+    `quantite` int(11) NOT NULL,
+    `stock_avant` int(10) UNSIGNED NOT NULL DEFAULT 0,
+    `stock_apres` int(10) UNSIGNED NOT NULL DEFAULT 0,
+    `reference` varchar(255) DEFAULT NULL COMMENT 'Référence commande ou note',
+    `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    KEY `idx_produit` (`produit_id`),
+    KEY `idx_taille` (`taille_id`),
+    KEY `idx_type` (`type`),
+    KEY `idx_date` (`created_at`),
+    CONSTRAINT `fk_mvt_produit` FOREIGN KEY (`produit_id`) REFERENCES `produits` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_mvt_taille` FOREIGN KEY (`taille_id`) REFERENCES `tailles_produits` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Admin par défaut (mot de passe : admin123)
 INSERT IGNORE INTO `admins` (`id`, `nom`, `email`, `password`, `created_at`)
 VALUES (1, 'Admin', 'admin@boutique.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW());
