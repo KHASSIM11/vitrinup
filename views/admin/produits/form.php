@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title><?= $produit ? 'Modifier' : 'Ajouter' ?> un produit — Admin</title>
+    <title><?= isset($produit) && $produit ? 'Modifier' : 'Ajouter' ?> un produit — Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -89,7 +89,7 @@
 
 <aside class="sidebar">
     <div class="brand"><?= htmlspecialchars(SITE_NAME) ?></div>
-    <div class="admin-info">👤 <?= htmlspecialchars($adminNom) ?></div>
+    <div class="admin-info">👤 <?= htmlspecialchars($adminNom ?? '') ?></div>
     <nav>
         <a href="<?= URL_ROOT ?>/admin"><span>📊</span> Dashboard</a>
         <a href="<?= URL_ROOT ?>/admin/produits" class="active"><span>👟</span> Produits</a>
@@ -103,7 +103,7 @@
 
 <main class="main">
     <div class="page-header">
-        <h1><?= $produit ? '✏️ Modifier le produit' : '➕ Ajouter un produit' ?></h1>
+        <h1><?= isset($produit) && $produit ? '✏️ Modifier le produit' : '➕ Ajouter un produit' ?></h1>
         <a href="<?= URL_ROOT ?>/admin/produits" class="btn-back">← Retour à la liste</a>
     </div>
 
@@ -112,7 +112,7 @@
     <?php endif; ?>
 
     <form method="POST" enctype="multipart/form-data"
-          action="<?= $produit ? URL_ROOT . '/admin/produits/modifier/' . $produit['id'] : URL_ROOT . '/admin/produits/ajouter' ?>">
+          action="<?= isset($produit) && $produit ? URL_ROOT . '/admin/produits/modifier/' . $produit['id'] : URL_ROOT . '/admin/produits/ajouter' ?>">
 
         <div class="form-grid">
             <!-- COLONNE GAUCHE -->
@@ -198,7 +198,7 @@
                         <label>Catégorie *</label>
                         <select name="categorie_id" required>
                             <option value="">-- Choisir --</option>
-                            <?php foreach ($categories as $cat): ?>
+                            <?php foreach (($categories ?? []) as $cat): ?>
                                 <option value="<?= $cat['id'] ?>"
                                     <?= isset($produit['categorie_id']) && $produit['categorie_id'] == $cat['id'] ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($cat['nom']) ?>
@@ -223,7 +223,7 @@
                     <div class="toggle-statut">
                         <label>
                             <input type="radio" name="statut" value="actif"
-                                <?= !$produit || $produit['statut'] === 'actif' ? 'checked' : '' ?>>
+                                <?= !isset($produit) || !$produit || $produit['statut'] === 'actif' ? 'checked' : '' ?>>
                             ✅ Actif
                         </label>
                         <label>
@@ -236,7 +236,7 @@
 
                 <div class="card">
                     <button type="submit" class="btn-submit">
-                        <?= $produit ? '💾 ENREGISTRER' : '➕ AJOUTER LE PRODUIT' ?>
+                        <?= isset($produit) && $produit ? '💾 ENREGISTRER' : '➕ AJOUTER LE PRODUIT' ?>
                     </button>
                 </div>
             </div>
