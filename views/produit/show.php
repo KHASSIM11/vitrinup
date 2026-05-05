@@ -1,3 +1,10 @@
+<?php
+/** @var string $title Titre de la page */
+/** @var array $produit Données du produit */
+/** @var array $images Liste des images */
+/** @var array $tailles Liste des tailles disponibles */
+/** @var array $similaires Produits similaires */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -85,11 +92,29 @@
             border-radius: 10px;
             overflow: hidden;
             border: 1px solid var(--border);
+            cursor: zoom-in;
+            position: relative;
         }
         .main-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .main-image:hover img {
+            transform: scale(1.03);
+        }
+        .main-image .zoom-hint {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
         }
         .thumbnails {
             display: flex;
@@ -103,16 +128,140 @@
             overflow: hidden;
             border: 2px solid var(--border);
             cursor: pointer;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+            opacity: 0.6;
         }
         .thumbnail:hover, .thumbnail.active {
             border-color: var(--accent);
+            opacity: 1;
         }
         .thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+
+        /* ── LIGHTBOX ── */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.92);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+        .lightbox.open {
+            display: flex;
+        }
+        .lightbox .lb-close {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            color: #fff;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            z-index: 10;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border: none;
+        }
+        .lightbox .lb-close:hover {
+            color: var(--accent);
+            background: rgba(255,255,255,0.2);
+        }
+        .lightbox .lb-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+        .lightbox .lb-nav button {
+            pointer-events: auto;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lightbox .lb-nav button:hover {
+            background: var(--accent);
+            color: #0a0a0a;
+        }
+        .lightbox .lb-image {
+            max-width: 85vw;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: lbFadeIn 0.3s ease;
+        }
+        @keyframes lbFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        .lightbox .lb-counter {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            background: rgba(0,0,0,0.5);
+            padding: 6px 18px;
+            border-radius: 20px;
+        }
+        .lightbox .lb-thumbs {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 12px;
+            max-width: 90vw;
+            overflow-x: auto;
+        }
+        .lightbox .lb-thumbs img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+            opacity: 0.5;
+        }
+        .lightbox .lb-thumbs img:hover,
+        .lightbox .lb-thumbs img.active {
+            border-color: var(--accent);
+            opacity: 1;
+        }
+        /* Masquer scrollbar sur la lightbox */
+        .lightbox .lb-thumbs::-webkit-scrollbar { height: 4px; }
+        .lightbox .lb-thumbs::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
 
         /* ── PRODUCT INFO ── */
         .product-info {
@@ -392,6 +541,7 @@
                     : 'https://via.placeholder.com/600x600/141414/c9a84c?text=Photo';
             ?>
             <img id="mainImage" src="<?= htmlspecialchars($mainImage) ?>" alt="<?= htmlspecialchars($produit['nom']) ?>">
+            <div class="zoom-hint">🔍 Cliquez pour zoomer</div>
         </div>
         <?php if (count($images) > 1): ?>
         <div class="thumbnails">
@@ -505,6 +655,26 @@
 </section>
 <?php endif; ?>
 
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightboxOutside(event)">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <div class="lb-nav">
+        <button onclick="prevLightboxImage(event)">‹</button>
+        <button onclick="nextLightboxImage(event)">›</button>
+    </div>
+    <img class="lb-image" id="lbImage" src="" alt="">
+    <div class="lb-counter" id="lbCounter"></div>
+    <?php if (count($images) > 1): ?>
+    <div class="lb-thumbs" id="lbThumbs">
+        <?php foreach ($images as $index => $img): ?>
+            <img src="<?= UPLOAD_URL . $img['chemin'] ?>" 
+                 class="<?= $index === 0 ? 'active' : '' ?>"
+                 onclick="goToLightboxImage(<?= $index ?>, event)">
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+</div>
+
 <!-- FOOTER -->
 <footer>
     <p><?= htmlspecialchars(SITE_NAME) ?> — <a href="https://wa.me/<?= WHATSAPP ?>">WhatsApp</a></p>
@@ -513,6 +683,16 @@
 
 <script>
 let tailleSelectionnee = '';
+let lbImages = [];
+let lbCurrentIndex = 0;
+
+<?php if (!empty($images)): ?>
+lbImages = [
+    <?php foreach ($images as $img): ?>
+        '<?= UPLOAD_URL . $img['chemin'] ?>',
+    <?php endforeach; ?>
+];
+<?php endif; ?>
 
 function changeImage(src, thumb) {
     document.getElementById('mainImage').src = src;
@@ -534,6 +714,72 @@ function changeQuantite(delta) {
     input.value = val;
 }
 
+// ── LIGHTBOX ──────────────────────────────────────────
+function openLightbox(index) {
+    if (lbImages.length === 0) return;
+    lbCurrentIndex = index !== undefined ? index : 0;
+    updateLightbox();
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function closeLightboxOutside(e) {
+    if (e.target === e.currentTarget) closeLightbox();
+}
+
+function updateLightbox() {
+    const img = document.getElementById('lbImage');
+    img.src = lbImages[lbCurrentIndex];
+    document.getElementById('lbCounter').textContent = (lbCurrentIndex + 1) + ' / ' + lbImages.length;
+    
+    // Miniatures actives
+    const thumbs = document.querySelectorAll('#lbThumbs img');
+    thumbs.forEach((t, i) => {
+        t.classList.toggle('active', i === lbCurrentIndex);
+        // Scroll dans la vue
+        if (i === lbCurrentIndex) t.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    });
+}
+
+function nextLightboxImage(e) {
+    if (e) e.stopPropagation();
+    lbCurrentIndex = (lbCurrentIndex + 1) % lbImages.length;
+    updateLightbox();
+}
+
+function prevLightboxImage(e) {
+    if (e) e.stopPropagation();
+    lbCurrentIndex = (lbCurrentIndex - 1 + lbImages.length) % lbImages.length;
+    updateLightbox();
+}
+
+function goToLightboxImage(index, e) {
+    if (e) e.stopPropagation();
+    lbCurrentIndex = index;
+    updateLightbox();
+}
+
+// Ouvrir la lightbox au clic sur l'image principale
+document.querySelector('.main-image').addEventListener('click', function() {
+    // Trouver l'index de l'image actuellement affichée
+    const currentSrc = document.getElementById('mainImage').src;
+    const idx = lbImages.findIndex(src => src === currentSrc);
+    openLightbox(idx >= 0 ? idx : 0);
+});
+
+// Navigation clavier
+document.addEventListener('keydown', function(e) {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowRight') nextLightboxImage();
+    if (e.key === 'ArrowLeft') prevLightboxImage();
+});
+
 // Validation avant soumission
 document.getElementById('formPanier').addEventListener('submit', function(e) {
     <?php if (!empty($tailles)): ?>
@@ -542,19 +788,17 @@ document.getElementById('formPanier').addEventListener('submit', function(e) {
         alert('Veuillez sélectionner une pointure avant d\'ajouter au panier.');
         return false;
     }
-    // Ajouter la taille au formulaire
-    const inputTaille = document.createElement('input');
-    inputTaille.type = 'hidden';
-    inputTaille.name = 'taille';
-    inputTaille.value = tailleSelectionnee;
-    this.appendChild(inputTaille);
+    const tailleInput = document.createElement('input');
+    tailleInput.type = 'hidden';
+    tailleInput.name = 'taille';
+    tailleInput.value = tailleSelectionnee;
+    this.appendChild(tailleInput);
     <?php else: ?>
-    // Si pas de tailles, ajouter une valeur par défaut
-    const inputTaille = document.createElement('input');
-    inputTaille.type = 'hidden';
-    inputTaille.name = 'taille';
-    inputTaille.value = 'Unique';
-    this.appendChild(inputTaille);
+    const tailleInput = document.createElement('input');
+    tailleInput.type = 'hidden';
+    tailleInput.name = 'taille';
+    tailleInput.value = 'Unique';
+    this.appendChild(tailleInput);
     <?php endif; ?>
 });
 </script>
