@@ -1,10 +1,6 @@
 <?php
-/**
- * Vue d'accueil moderne pour Vitrinup.
- * Variables attendues :
- *   - $title    : titre de la page
- *   - $produits : tableau des produits (id, nom, prix, prix_promo, image)
- */
+/** @var string $title Titre de la page */
+/** @var array $produits Liste des produits */
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -102,38 +98,6 @@
         }
         .product-card .whatsapp-btn:hover { opacity:0.9; }
 
-        /* CATEGORIES BANNER */
-        .categories {
-            display:flex;
-            flex-wrap:wrap;
-            margin:40px 0;
-        }
-        .category {
-            flex:1 1 33.333%;
-            position:relative;
-            height:200px;
-            background-size:cover;
-            background-position:center;
-            margin:5px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            color:var(--text-light);
-            font-size:1.5rem;
-            font-weight:bold;
-            text-shadow:0 2px 4px rgba(0,0,0,0.7);
-        }
-        .category::after {
-            content:"";
-            position:absolute;
-            inset:0;
-            background:rgba(0,0,0,0.4);
-        }
-        .category a {
-            position:relative;
-            z-index:2;
-        }
-
         /* FOOTER */
         footer {
             background:var(--bg-dark);
@@ -225,8 +189,6 @@
         @media (max-width:768px) {
             .hero h1 {font-size:2.5rem;}
             .hero p {font-size:1.2rem;}
-            .categories {flex-direction:column;}
-            .category {flex:1 1 100%; height:150px;}
             header nav { display: none; }
             .mobile-menu-btn { display: flex; }
             .mobile-menu { display: flex; }
@@ -299,18 +261,7 @@ if (isset($_SESSION['panier'])) {
         </div>
     </section>
 
-    <!-- CATEGORIES BANNER -->
-    <section class="categories">
-        <div class="category" style="background-image:url('https://via.placeholder.com/600x400/0a0a0a/f5f0eb?text=Homme');">
-            <a href="<?= URL_ROOT ?>/catalogue?genre=homme">Homme</a>
-        </div>
-        <div class="category" style="background-image:url('https://via.placeholder.com/600x400/0a0a0a/f5f0eb?text=Femme');">
-            <a href="<?= URL_ROOT ?>/catalogue?genre=femme">Femme</a>
-        </div>
-        <div class="category" style="background-image:url('https://via.placeholder.com/600x400/0a0a0a/f5f0eb?text=Enfant');">
-            <a href="<?= URL_ROOT ?>/catalogue?genre=enfant">Enfant</a>
-        </div>
-    </section>
+    <!-- (Section catégories supprimée) -->
 
     <!-- FOOTER -->
     <footer>

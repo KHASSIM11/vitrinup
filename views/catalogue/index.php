@@ -504,16 +504,6 @@ if (isset($_SESSION['panier'])) {
 
 <!-- FILTRES -->
 <div class="filtres">
-    <!-- Filtres genre -->
-    <div class="filtres-genre">
-        <button type="button" class="btn-filtre <?= empty($filtreGenre) ? 'actif' : '' ?>" onclick="appliquerFiltre('genre', '')">Tous</button>
-        <?php foreach (['homme' => 'Homme', 'femme' => 'Femme', 'enfant' => 'Enfant'] as $val => $label): ?>
-            <button type="button" class="btn-filtre <?= $filtreGenre === $val ? 'actif' : '' ?>" onclick="appliquerFiltre('genre', '<?= $val ?>')">
-                <?= $label ?>
-            </button>
-        <?php endforeach; ?>
-    </div>
-
     <!-- Filtre catégorie -->
     <select class="select-categorie" id="selectCategorie" onchange="appliquerFiltre('categorie', this.value)">
         <option value="">Toutes les catégories</option>
