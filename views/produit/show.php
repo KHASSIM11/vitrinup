@@ -782,19 +782,20 @@ document.addEventListener('keydown', function(e) {
 
 // Validation avant soumission
 document.getElementById('formPanier').addEventListener('submit', function(e) {
+    let tailleInput;
     <?php if (!empty($tailles)): ?>
     if (!tailleSelectionnee) {
         e.preventDefault();
         alert('Veuillez sélectionner une pointure avant d\'ajouter au panier.');
         return false;
     }
-    const tailleInput = document.createElement('input');
+    tailleInput = document.createElement('input');
     tailleInput.type = 'hidden';
     tailleInput.name = 'taille';
     tailleInput.value = tailleSelectionnee;
     this.appendChild(tailleInput);
     <?php else: ?>
-    const tailleInput = document.createElement('input');
+    tailleInput = document.createElement('input');
     tailleInput.type = 'hidden';
     tailleInput.name = 'taille';
     tailleInput.value = 'Unique';
