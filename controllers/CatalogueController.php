@@ -10,6 +10,10 @@ class CatalogueController extends Controller {
         // Filtres GET
         $filtreGenre     = $_GET['genre']        ?? '';
         $filtreCategorie = $_GET['categorie_id'] ?? '';
+        $filtreMarque    = $_GET['marque']        ?? '';
+        $prixMin         = $_GET['prix_min']      ?? '';
+        $prixMax         = $_GET['prix_max']      ?? '';
+        $tri             = $_GET['tri']           ?? 'nouveautes';
 
         // Construction de la requête avec filtres
         $sql = "SELECT p.id, p.nom, p.slug, p.prix, p.prix_promo, p.genre, p.marque,
@@ -32,7 +36,38 @@ class CatalogueController extends Controller {
             $params[':categorie_id'] = $filtreCategorie;
         }
 
-        $sql .= " ORDER BY p.created_at DESC";
+        if (!empty($filtreMarque)) {
+            $sql .= " AND p.marque = :marque";
+            $params[':marque'] = $filtreMarque;
+        }
+
+        if (!empty($prixMin)) {
+            $sql .= " AND (p.prix_promo IS NOT NULL AND p.prix_promo >= :prix_min OR p.prix_promo IS NULL AND p.prix >= :prix_min2)";
+            $params[':prix_min'] = floatval($prixMin);
+            $params[':prix_min2'] = floatval($prixMin);
+        }
+
+        if (!empty($prixMax)) {
+            $sql .= " AND (p.prix_promo IS NOT NULL AND p.prix_promo <= :prix_max OR p.prix_promo IS NULL AND p.prix <= :prix_max2)";
+            $params[':prix_max'] = floatval($prixMax);
+            $params[':prix_max2'] = floatval($prixMax);
+        }
+
+        // Tri
+        switch ($tri) {
+            case 'prix_croissant':
+                $sql .= " ORDER BY COALESCE(p.prix_promo, p.prix) ASC";
+                break;
+            case 'prix_decroissant':
+                $sql .= " ORDER BY COALESCE(p.prix_promo, p.prix) DESC";
+                break;
+            case 'nom':
+                $sql .= " ORDER BY p.nom ASC";
+                break;
+            default: // nouveautes
+                $sql .= " ORDER BY p.created_at DESC";
+                break;
+        }
 
         $query = $db->query($sql);
         foreach ($params as $key => $val) {
@@ -45,12 +80,22 @@ class CatalogueController extends Controller {
             "SELECT * FROM categories ORDER BY ordre ASC"
         )->resultSet();
 
+        // Toutes les marques distinctes pour le filtre
+        $marques = $db->query(
+            "SELECT DISTINCT marque FROM produits WHERE statut = 'actif' AND marque IS NOT NULL AND marque != '' ORDER BY marque ASC"
+        )->resultSet();
+
         $data = [
             'title'           => 'Catalogue — ' . SITE_NAME,
             'produits'        => $produits,
             'categories'      => $categories,
+            'marques'         => $marques,
             'filtreGenre'     => $filtreGenre,
             'filtreCategorie' => $filtreCategorie,
+            'filtreMarque'    => $filtreMarque,
+            'prixMin'         => $prixMin,
+            'prixMax'         => $prixMax,
+            'tri'             => $tri,
         ];
 
         $this->view('catalogue/index', $data);

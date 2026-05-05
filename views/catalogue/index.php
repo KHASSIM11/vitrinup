@@ -2,8 +2,13 @@
 /** @var string $title Titre de la page */
 /** @var array $produits Liste des produits */
 /** @var array $categories Liste des catégories */
+/** @var array $marques Liste des marques */
 /** @var string $filtreGenre Filtre genre actif */
 /** @var string $filtreCategorie Filtre catégorie actif */
+/** @var string $filtreMarque Filtre marque actif */
+/** @var string $prixMin Filtre prix minimum */
+/** @var string $prixMax Filtre prix maximum */
+/** @var string $tri Tri actif */
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -231,9 +236,56 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .filtres-genre {
+        .filtre-group {
             display: flex;
-            gap: 8px;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .filtre-group label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-left: 4px;
+        }
+
+        .filtre-select,
+        .filtre-input {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            background: transparent;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .filtre-select:focus,
+        .filtre-input:focus {
+            border-color: var(--accent);
+        }
+        .filtre-select option {
+            background: #1a1a1a;
+            color: var(--text-light);
+        }
+
+        .filtre-input {
+            width: 90px;
+            cursor: text;
+        }
+        .filtre-input::placeholder {
+            color: #555;
+        }
+
+        .filtre-prix {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filtre-prix span {
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
 
         .btn-filtre {
@@ -255,19 +307,20 @@
             font-weight: 600;
         }
 
-        .select-categorie {
-            padding: 8px 16px;
-            border: 1px solid var(--border);
+        .btn-filtre-reset {
+            padding: 8px 20px;
+            border: 1px solid #444;
             border-radius: 30px;
             background: transparent;
-            color: var(--text-light);
-            font-size: 0.9rem;
+            color: #666;
             cursor: pointer;
-            outline: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            text-decoration: none;
         }
-        .select-categorie option {
-            background: #1a1a1a;
-            color: var(--text-light);
+        .btn-filtre-reset:hover {
+            border-color: var(--promo);
+            color: var(--promo);
         }
 
         /* ── GRILLE PRODUITS ── */
@@ -503,17 +556,58 @@ if (isset($_SESSION['panier'])) {
 </div>
 
 <!-- FILTRES -->
-<div class="filtres">
-    <!-- Filtre catégorie -->
-    <select class="select-categorie" id="selectCategorie" onchange="appliquerFiltre('categorie', this.value)">
-        <option value="">Toutes les catégories</option>
-        <?php foreach ($categories as $cat): ?>
-            <option value="<?= $cat['id'] ?>" <?= $filtreCategorie == $cat['id'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($cat['nom']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-</div>
+<form class="filtres" method="GET" action="<?= URL_ROOT ?>/catalogue" id="formFiltres">
+    <!-- Catégorie -->
+    <div class="filtre-group">
+        <label>Catégorie</label>
+        <select name="categorie_id" class="filtre-select" onchange="this.form.submit()">
+            <option value="">Toutes</option>
+            <?php foreach ($categories as $cat): ?>
+                <option value="<?= $cat['id'] ?>" <?= $filtreCategorie == $cat['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($cat['nom']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <!-- Marque -->
+    <div class="filtre-group">
+        <label>Marque</label>
+        <select name="marque" class="filtre-select" onchange="this.form.submit()">
+            <option value="">Toutes</option>
+            <?php foreach ($marques as $m): ?>
+                <option value="<?= htmlspecialchars($m['marque']) ?>" <?= $filtreMarque == $m['marque'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($m['marque']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <!-- Prix min / max -->
+    <div class="filtre-group">
+        <label>Prix</label>
+        <div class="filtre-prix">
+            <input type="number" name="prix_min" class="filtre-input" placeholder="Min" min="0" value="<?= htmlspecialchars($prixMin) ?>">
+            <span>—</span>
+            <input type="number" name="prix_max" class="filtre-input" placeholder="Max" min="0" value="<?= htmlspecialchars($prixMax) ?>">
+        </div>
+    </div>
+
+    <!-- Tri -->
+    <div class="filtre-group">
+        <label>Trier par</label>
+        <select name="tri" class="filtre-select" onchange="this.form.submit()">
+            <option value="nouveautes" <?= $tri === 'nouveautes' ? 'selected' : '' ?>>Nouveautés</option>
+            <option value="prix_croissant" <?= $tri === 'prix_croissant' ? 'selected' : '' ?>>Prix croissant</option>
+            <option value="prix_decroissant" <?= $tri === 'prix_decroissant' ? 'selected' : '' ?>>Prix décroissant</option>
+            <option value="nom" <?= $tri === 'nom' ? 'selected' : '' ?>>Nom A-Z</option>
+        </select>
+    </div>
+
+    <!-- Bouton appliquer (pour le prix) + reset -->
+    <button type="submit" class="btn-filtre" style="margin-top:18px;">🔍 Filtrer</button>
+    <a href="<?= URL_ROOT ?>/catalogue" class="btn-filtre-reset" style="margin-top:18px;">✕ Réinitialiser</a>
+</form>
 
 <!-- CATALOGUE -->
 <div class="catalogue">
@@ -574,52 +668,20 @@ if (isset($_SESSION['panier'])) {
 </footer>
 
 <script>
-// Synchronisation des filtres : boutons genre + select catégorie
-function appliquerFiltre(type, valeur) {
-    const params = new URLSearchParams(window.location.search);
-    
-    if (type === 'genre') {
-        if (valeur) {
-            params.set('genre', valeur);
-        } else {
-            params.delete('genre');
-        }
-    } else if (type === 'categorie') {
-        if (valeur) {
-            params.set('categorie_id', valeur);
-        } else {
-            params.delete('categorie_id');
-        }
-    }
-    
-    // Construire l'URL
-    let url = '<?= URL_ROOT ?>/catalogue';
-    const qs = params.toString();
-    if (qs) url += '?' + qs;
-    
-    window.location.href = url;
-}
-
 // Menu mobile
 function toggleMenu() {
     const menu = document.getElementById('mobileMenu');
     const overlay = document.getElementById('overlay');
     const btn = document.querySelector('.mobile-menu-btn');
-    
     menu.classList.toggle('active');
     overlay.classList.toggle('active');
     btn.classList.toggle('active');
-    
     document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
 }
-
-// Fermer avec Escape
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const menu = document.getElementById('mobileMenu');
-        if (menu.classList.contains('active')) {
-            toggleMenu();
-        }
+        if (menu.classList.contains('active')) toggleMenu();
     }
 });
 </script>
