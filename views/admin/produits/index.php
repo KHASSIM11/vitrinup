@@ -1,3 +1,7 @@
+<?php
+/** @var array $produits Liste des produits */
+/** @var string $adminNom Nom de l'admin connecté */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
