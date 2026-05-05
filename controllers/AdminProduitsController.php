@@ -21,17 +21,28 @@ class AdminProduitsController extends Controller {
 
     // ── LISTE ──────────────────────────────────────────────
     public function index(): void {
+        $page   = max(1, intval($_GET['page'] ?? 1));
+        $limite = 15;
+        $offset = ($page - 1) * $limite;
+
+        $total = $this->db->query("SELECT COUNT(*) AS cnt FROM produits")->single()['cnt'];
+        $totalPages = max(1, ceil($total / $limite));
+
         $produits = $this->db->query(
             "SELECT p.*, c.nom AS categorie_nom,
                     (SELECT chemin FROM images_produits WHERE produit_id = p.id AND est_principale = 1 LIMIT 1) AS image
              FROM produits p
              LEFT JOIN categories c ON p.categorie_id = c.id
-             ORDER BY p.created_at DESC"
+             ORDER BY p.created_at DESC
+             LIMIT $limite OFFSET $offset"
         )->resultSet();
 
         $this->view('admin/produits/index', [
-            'produits' => $produits,
-            'adminNom' => $_SESSION['admin_nom'],
+            'produits'   => $produits,
+            'page'       => $page,
+            'totalPages' => $totalPages,
+            'total'      => $total,
+            'adminNom'   => $_SESSION['admin_nom'],
         ]);
     }
 

@@ -22,18 +22,33 @@ class AdminCommandesController extends Controller {
     // ── LISTE ──────────────────────────────────────────────
     public function index(): void {
         $statut = $_GET['statut'] ?? '';
+        $page   = max(1, intval($_GET['page'] ?? 1));
+        $limite = 15;
+        $offset = ($page - 1) * $limite;
 
-        $sql = "SELECT cm.*, p.nom AS produit_nom, p.slug AS produit_slug
-                FROM commandes cm
-                JOIN produits p ON cm.produit_id = p.id";
-        
+        $where  = '';
         $params = [];
+
         if (!empty($statut)) {
-            $sql .= " WHERE cm.statut = :statut";
+            $where = " WHERE cm.statut = :statut";
             $params[':statut'] = $statut;
         }
 
-        $sql .= " ORDER BY cm.created_at DESC";
+        // Compte total
+        $countQuery = $this->db->query("SELECT COUNT(*) AS cnt FROM commandes cm" . $where);
+        foreach ($params as $key => $val) {
+            $countQuery->bind($key, $val);
+        }
+        $total      = $countQuery->single()['cnt'];
+        $totalPages = max(1, ceil($total / $limite));
+
+        // Requête paginée
+        $sql = "SELECT cm.*, p.nom AS produit_nom, p.slug AS produit_slug
+                FROM commandes cm
+                JOIN produits p ON cm.produit_id = p.id"
+                . $where .
+                " ORDER BY cm.created_at DESC
+                LIMIT $limite OFFSET $offset";
 
         $query = $this->db->query($sql);
         foreach ($params as $key => $val) {
@@ -55,6 +70,9 @@ class AdminCommandesController extends Controller {
             'commandes'      => $commandes,
             'statutActif'    => $statut,
             'statsParStatut' => $statsParStatut,
+            'page'           => $page,
+            'totalPages'     => $totalPages,
+            'total'          => $total,
             'adminNom'       => $_SESSION['admin_nom'],
         ]);
     }

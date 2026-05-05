@@ -3,6 +3,9 @@
  * @var array  $commandes      Liste des commandes
  * @var string $statutActif    Statut actuellement filtré
  * @var array  $statsParStatut Statistiques par statut
+ * @var int    $page           Page courante
+ * @var int    $totalPages     Nombre total de pages
+ * @var int    $total          Nombre total de commandes
  * @var string $adminNom       Nom de l'admin connecté
  */
 ?>
@@ -82,6 +85,21 @@
         .flash-error { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; }
         .client-info { font-size: 0.85rem; color: #666; }
         .client-info strong { color: #1a1a1a; }
+        .pagination {
+            display: flex; justify-content: center; align-items: center;
+            gap: 6px; margin-top: 25px; flex-wrap: wrap;
+        }
+        .pagination a, .pagination span {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 36px; height: 36px; padding: 0 10px;
+            border: 1px solid #ddd; border-radius: 6px;
+            font-size: 0.85rem; color: #333; text-decoration: none;
+            transition: all 0.2s;
+        }
+        .pagination a:hover { border-color: #c9a84c; color: #c9a84c; }
+        .pagination .active { background: #c9a84c; color: #0a0a0a; border-color: #c9a84c; font-weight: 700; }
+        .pagination .disabled { opacity: 0.3; cursor: not-allowed; }
+        .pagination .page-info { color: #888; border: none; padding: 0 4px; }
     </style>
 </head>
 <body>
@@ -180,9 +198,51 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
+
+            <!-- Pagination -->
+            <?php if ($totalPages > 1): ?>
+            <div class="pagination">
+                <?php
+                $queryParams = $_GET;
+                unset($queryParams['page']);
+                $baseUrl = URL_ROOT . '/admin/commandes' . (!empty($statutActif) ? '?statut=' . $statutActif : '');
+                ?>
+                <?php if ($page > 1): ?>
+                    <a href="<?= $baseUrl ?>&page=<?= $page - 1 ?>">‹ Précédent</a>
+                <?php else: ?>
+                    <span class="disabled">‹ Précédent</span>
+                <?php endif; ?>
+
+                <?php
+                $debut = max(1, $page - 2);
+                $fin   = min($totalPages, $page + 2);
+                if ($debut > 1): ?>
+                    <a href="<?= $baseUrl ?>&page=1">1</a>
+                    <?php if ($debut > 2): ?><span class="page-info">…</span><?php endif; ?>
+                <?php endif; ?>
+
+                <?php for ($i = $debut; $i <= $fin; $i++): ?>
+                    <?php if ($i == $page): ?>
+                        <span class="active"><?= $i ?></span>
+                    <?php else: ?>
+                        <a href="<?= $baseUrl ?>&page=<?= $i ?>"><?= $i ?></a>
+                    <?php endif; ?>
+                <?php endfor; ?>
+
+                <?php if ($fin < $totalPages): ?>
+                    <?php if ($fin < $totalPages - 1): ?><span class="page-info">…</span><?php endif; ?>
+                    <a href="<?= $baseUrl ?>&page=<?= $totalPages ?>"><?= $totalPages ?></a>
+                <?php endif; ?>
+
+                <?php if ($page < $totalPages): ?>
+                    <a href="<?= $baseUrl ?>&page=<?= $page + 1 ?>">Suivant ›</a>
+                <?php else: ?>
+                    <span class="disabled">Suivant ›</span>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </main>
 
 </body>
-</html>

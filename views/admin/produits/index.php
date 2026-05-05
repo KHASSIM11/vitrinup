@@ -1,5 +1,8 @@
 <?php
 /** @var array $produits Liste des produits */
+/** @var int $page Page courante */
+/** @var int $totalPages Nombre total de pages */
+/** @var int $total Nombre total de produits */
 /** @var string $adminNom Nom de l'admin connecté */
 ?>
 <!DOCTYPE html>
@@ -56,6 +59,21 @@
         .btn-delete { background: #ffebee; color: #c62828; }
         .btn-delete:hover { opacity: 0.8; }
         .empty-msg { text-align: center; color: #aaa; padding: 40px; }
+        .pagination {
+            display: flex; justify-content: center; align-items: center;
+            gap: 6px; margin-top: 25px; flex-wrap: wrap;
+        }
+        .pagination a, .pagination span {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 36px; height: 36px; padding: 0 10px;
+            border: 1px solid #ddd; border-radius: 6px;
+            font-size: 0.85rem; color: #333; text-decoration: none;
+            transition: all 0.2s;
+        }
+        .pagination a:hover { border-color: #c9a84c; color: #c9a84c; }
+        .pagination .active { background: #c9a84c; color: #0a0a0a; border-color: #c9a84c; font-weight: 700; }
+        .pagination .disabled { opacity: 0.3; cursor: not-allowed; }
+        .pagination .page-info { color: #888; border: none; padding: 0 4px; }
     </style>
 </head>
 <body>
@@ -127,9 +145,46 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
+
+            <!-- Pagination -->
+            <?php if ($totalPages > 1): ?>
+            <div class="pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?= $page - 1 ?>">‹ Précédent</a>
+                <?php else: ?>
+                    <span class="disabled">‹ Précédent</span>
+                <?php endif; ?>
+
+                <?php
+                $debut = max(1, $page - 2);
+                $fin   = min($totalPages, $page + 2);
+                if ($debut > 1): ?>
+                    <a href="?page=1">1</a>
+                    <?php if ($debut > 2): ?><span class="page-info">…</span><?php endif; ?>
+                <?php endif; ?>
+
+                <?php for ($i = $debut; $i <= $fin; $i++): ?>
+                    <?php if ($i == $page): ?>
+                        <span class="active"><?= $i ?></span>
+                    <?php else: ?>
+                        <a href="?page=<?= $i ?>"><?= $i ?></a>
+                    <?php endif; ?>
+                <?php endfor; ?>
+
+                <?php if ($fin < $totalPages): ?>
+                    <?php if ($fin < $totalPages - 1): ?><span class="page-info">…</span><?php endif; ?>
+                    <a href="?page=<?= $totalPages ?>"><?= $totalPages ?></a>
+                <?php endif; ?>
+
+                <?php if ($page < $totalPages): ?>
+                    <a href="?page=<?= $page + 1 ?>">Suivant ›</a>
+                <?php else: ?>
+                    <span class="disabled">Suivant ›</span>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </main>
 
 </body>
-</html>

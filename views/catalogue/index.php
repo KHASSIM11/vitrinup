@@ -9,6 +9,9 @@
 /** @var string $prixMin Filtre prix minimum */
 /** @var string $prixMax Filtre prix maximum */
 /** @var string $tri Tri actif */
+/** @var int $page Page courante */
+/** @var int $totalPages Nombre total de pages */
+/** @var int $totalProduits Nombre total de produits */
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -468,6 +471,51 @@
         }
         .empty h2 { font-size: 1.5rem; margin-bottom: 10px; }
 
+        /* ── PAGINATION ── */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        .pagination a,
+        .pagination span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .pagination a:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .pagination .active {
+            background: var(--accent);
+            color: var(--text-dark);
+            border-color: var(--accent);
+            font-weight: 700;
+        }
+        .pagination .disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .pagination .page-info {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border: none;
+            padding: 0 8px;
+        }
+
         /* ── FOOTER ── */
         footer {
             text-align: center;
@@ -661,6 +709,47 @@ if (isset($_SESSION['panier'])) {
     </div>
 </div>
 
+<!-- PAGINATION -->
+<?php if ($totalPages > 1): ?>
+<div class="pagination">
+    <!-- Page précédente -->
+    <?php if ($page > 1): ?>
+        <a href="?<?= http_build_query(array_merge($_GET, ['page' => $page - 1])) ?>">‹ Précédent</a>
+    <?php else: ?>
+        <span class="disabled">‹ Précédent</span>
+    <?php endif; ?>
+
+    <!-- Numéros de pages -->
+    <?php
+    $debut = max(1, $page - 2);
+    $fin   = min($totalPages, $page + 2);
+    if ($debut > 1): ?>
+        <a href="?<?= http_build_query(array_merge($_GET, ['page' => 1])) ?>">1</a>
+        <?php if ($debut > 2): ?><span class="page-info">…</span><?php endif; ?>
+    <?php endif; ?>
+
+    <?php for ($i = $debut; $i <= $fin; $i++): ?>
+        <?php if ($i == $page): ?>
+            <span class="active"><?= $i ?></span>
+        <?php else: ?>
+            <a href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"><?= $i ?></a>
+        <?php endif; ?>
+    <?php endfor; ?>
+
+    <?php if ($fin < $totalPages): ?>
+        <?php if ($fin < $totalPages - 1): ?><span class="page-info">…</span><?php endif; ?>
+        <a href="?<?= http_build_query(array_merge($_GET, ['page' => $totalPages])) ?>"><?= $totalPages ?></a>
+    <?php endif; ?>
+
+    <!-- Page suivante -->
+    <?php if ($page < $totalPages): ?>
+        <a href="?<?= http_build_query(array_merge($_GET, ['page' => $page + 1])) ?>">Suivant ›</a>
+    <?php else: ?>
+        <span class="disabled">Suivant ›</span>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
+
 <!-- FOOTER -->
 <footer>
     <p><?= htmlspecialchars(SITE_NAME) ?> — <a href="https://wa.me/<?= WHATSAPP ?>">WhatsApp</a></p>
@@ -687,4 +776,3 @@ document.addEventListener('keydown', function(e) {
 </script>
 
 </body>
-</html>
