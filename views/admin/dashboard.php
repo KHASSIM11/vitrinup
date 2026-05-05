@@ -5,7 +5,12 @@
 /** @var int $totalCommandes Nombre total de commandes */
 /** @var int $nouvellesCommandes Nombre de nouvelles commandes */
 /** @var array $dernieresCmds Dernières commandes */
+/** @var array $stockFaible Produits avec stock faible */
+/** @var array $ruptureStock Produits en rupture */
+/** @var int $nbStockFaible Nombre de produits en stock faible */
+/** @var int $nbRupture Nombre de produits en rupture */
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -174,8 +179,90 @@
         </div>
     </div>
 
+    <!-- STATS STOCKS -->
+    <div class="stats-grid" style="margin-top:10px;">
+        <div class="stat-card">
+            <div class="label">⚠️ Stock faible (≤<?= STOCK_SEUIL_ALERTE ?>)</div>
+            <div class="value" style="color:#ff9800"><?= $nbStockFaible ?></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">🚫 En rupture</div>
+            <div class="value red"><?= $nbRupture ?></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">📦 Voir tous les stocks</div>
+            <div class="value" style="font-size:1rem;margin-top:8px;">
+                <a href="<?= URL_ROOT ?>/admin/stocks" style="color:#c9a84c;text-decoration:none;font-weight:600;">Gérer les stocks →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALERTES STOCK FAIBLE -->
+    <?php if (!empty($stockFaible)): ?>
+    <div class="section" style="margin-top:25px;">
+        <h2>⚠️ Alertes stock faible (≤ <?= STOCK_SEUIL_ALERTE ?> unités)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Stock total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($stockFaible as $p): ?>
+                    <tr>
+                        <td>
+                            <strong><?= htmlspecialchars($p['nom']) ?></strong>
+                            <?php if ($p['marque']): ?>
+                                <br><small style="color:#888"><?= htmlspecialchars($p['marque']) ?></small>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <span style="color:#e65100;font-weight:700;"><?= intval($p['stock_total']) ?> unité(s)</span>
+                        </td>
+                        <td>
+                            <a href="<?= URL_ROOT ?>/admin/stocks?search=<?= urlencode($p['nom']) ?>" style="color:#1565c0;">Gérer le stock</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
+
+    <!-- PRODUITS EN RUPTURE -->
+    <?php if (!empty($ruptureStock)): ?>
+    <div class="section" style="margin-top:25px;">
+        <h2>🚫 Produits en rupture de stock</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($ruptureStock as $p): ?>
+                    <tr>
+                        <td>
+                            <strong><?= htmlspecialchars($p['nom']) ?></strong>
+                            <?php if ($p['marque']): ?>
+                                <br><small style="color:#888"><?= htmlspecialchars($p['marque']) ?></small>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <a href="<?= URL_ROOT ?>/admin/stocks?search=<?= urlencode($p['nom']) ?>" style="color:#1565c0;">Ajouter du stock</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
+
     <!-- DERNIÈRES COMMANDES -->
-    <div class="section">
+    <div class="section" style="margin-top:25px;">
         <h2>📦 Dernières commandes</h2>
         <?php if (empty($dernieresCmds)): ?>
             <p class="empty-msg">Aucune commande pour l'instant.</p>
@@ -213,4 +300,3 @@
 </main>
 
 </body>
-</html>

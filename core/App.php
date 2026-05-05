@@ -104,6 +104,14 @@ class App {
                     $this->params     = isset($url[3]) ? [$url[3]] : [];
                     break;
 
+                case 'stocks':
+                    $this->controller = 'AdminStocksController';
+                    $action = $url[2] ?? 'index';
+                    if (in_array($action, ['index', 'modifierStock', 'ajouterTaille', 'supprimerTaille'])) {
+                        $this->method = $action;
+                    }
+                    break;
+
                 case 'commandes':
                     $this->controller = 'AdminCommandesController';
                     $this->method     = $url[2] ?? 'index';

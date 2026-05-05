@@ -27,6 +27,9 @@ define('WHATSAPP',   '212604273455');              // ← numéro WhatsApp de to
 define('UPLOAD_DIR', __DIR__ . '/../uploads/produits/');
 define('UPLOAD_URL', URL_ROOT . '/uploads/produits/');
 
+// Seuil d'alerte stock (modifiable selon vos besoins)
+define('STOCK_SEUIL_ALERTE', 5);
+
 // Environnement
 define('DEBUG', false); // true en local, false en production
 ?>
