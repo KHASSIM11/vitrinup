@@ -111,19 +111,15 @@ class AdminCategoriesController extends Controller {
 
     // ── SUPPRIMER ──────────────────────────────────────────
     public function supprimer($id): void {
-        // Vérifier si des produits sont liés à cette catégorie
-        $nbProduits = $this->db->query(
-            "SELECT COUNT(*) AS cnt FROM produits WHERE categorie_id = :id"
-        )->bind(':id', $id)->single()['cnt'];
+        // Détacher tous les produits liés à cette catégorie (mettre categorie_id = NULL)
+        $this->db->query(
+            "UPDATE produits SET categorie_id = NULL WHERE categorie_id = :id"
+        )->bind(':id', $id)->execute();
 
-        if ($nbProduits > 0) {
-            $_SESSION['flash_error'] = "Impossible de supprimer : $nbProduits produit(s) sont liés à cette catégorie.";
-            header('Location: ' . URL_ROOT . '/admin/categories');
-            exit;
-        }
-
+        // Supprimer la catégorie
         $this->db->query("DELETE FROM categories WHERE id = :id")->bind(':id', $id)->execute();
 
+        $_SESSION['flash_success'] = "Catégorie supprimée avec succès. Les produits liés ont été détachés.";
         header('Location: ' . URL_ROOT . '/admin/categories');
         exit;
     }

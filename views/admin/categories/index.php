@@ -87,6 +87,12 @@
     </div>
 
     <!-- Flash messages -->
+    <?php if (!empty($_SESSION['flash_success'])): ?>
+        <div class="flash">
+            <div class="flash-message flash-success"><?= htmlspecialchars($_SESSION['flash_success']) ?></div>
+        </div>
+        <?php unset($_SESSION['flash_success']); ?>
+    <?php endif; ?>
     <?php if (!empty($_SESSION['flash_error'])): ?>
         <div class="flash">
             <div class="flash-message flash-error"><?= htmlspecialchars($_SESSION['flash_error']) ?></div>
