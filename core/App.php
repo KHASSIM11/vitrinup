@@ -92,7 +92,7 @@ class App {
                     // /admin/produits/ajouter
                     // /admin/produits/modifier/{id}
                     // /admin/produits/supprimer/{id}
-                    if (in_array($action, ['index', 'ajouter', 'modifier', 'supprimer'])) {
+                    if (in_array($action, ['index', 'ajouter', 'modifier', 'supprimer', 'supprimerImage'])) {
                         $this->method = $action;
                         $this->params = isset($url[3]) ? [$url[3]] : [];
                     }
