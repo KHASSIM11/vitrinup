@@ -31,11 +31,12 @@ class AdminStocksController extends Controller {
         $params  = [];
 
         if (!empty($search)) {
-            $where[] = "p.nom LIKE :search";
+            $where[] = "(p.nom LIKE :search OR p.marque LIKE :search2)";
             $params[':search'] = '%' . $search . '%';
+            $params[':search2'] = '%' . $search . '%';
         }
         if ($statut === 'faible') {
-            $where[] = "(SELECT COALESCE(SUM(tp2.stock), 0) FROM tailles_produits tp2 WHERE tp2.produit_id = p.id) <= :seuil";
+            $where[] = "(SELECT COALESCE(SUM(tp2.stock), 0) FROM tailles_produits tp2 WHERE tp2.produit_id = p.id) BETWEEN 1 AND :seuil";
             $params[':seuil'] = STOCK_SEUIL_ALERTE;
         } elseif ($statut === 'rupture') {
             $where[] = "p.id NOT IN (SELECT tp3.produit_id FROM tailles_produits tp3 WHERE tp3.stock > 0)";
@@ -49,9 +50,7 @@ class AdminStocksController extends Controller {
         // Total
         $countSql = "SELECT COUNT(*) AS cnt FROM produits p" . $whereClause;
         $countQuery = $this->db->query($countSql);
-        foreach ($params as $k => $v) {
-            $countQuery->bind($k, $v);
-        }
+        foreach ($params as $k => $v) { $countQuery->bind($k, $v); }
         $total = $countQuery->single()['cnt'];
         $totalPages = max(1, ceil($total / $limite));
 
@@ -66,9 +65,7 @@ class AdminStocksController extends Controller {
                 LIMIT $limite OFFSET $offset";
 
         $query = $this->db->query($sql);
-        foreach ($params as $k => $v) {
-            $query->bind($k, $v);
-        }
+        foreach ($params as $k => $v) { $query->bind($k, $v); }
         $produits = $query->resultSet();
 
         // Récupérer les tailles pour chaque produit
@@ -84,13 +81,23 @@ class AdminStocksController extends Controller {
             }
         }
 
-        // Stats globales
+        // Stats globales améliorées
         $stats = $this->db->query(
             "SELECT
-                (SELECT COUNT(*) FROM produits p1 WHERE p1.id IN (SELECT tp1.produit_id FROM tailles_produits tp1 GROUP BY tp1.produit_id HAVING COALESCE(SUM(tp1.stock), 0) <= :seuil3)) AS stock_faible,
-                (SELECT COUNT(*) FROM produits p2 WHERE p2.id NOT IN (SELECT tp2.produit_id FROM tailles_produits tp2 WHERE tp2.stock > 0) AND p2.statut = 'actif') AS rupture,
-                (SELECT COUNT(*) FROM produits p3 WHERE p3.id IN (SELECT tp3.produit_id FROM tailles_produits tp3)) AS avec_stock"
-        )->bind(':seuil3', STOCK_SEUIL_ALERTE)->single();
+                (SELECT COUNT(*) FROM produits p1 WHERE p1.id IN (SELECT tp1.produit_id FROM tailles_produits tp1 GROUP BY tp1.produit_id HAVING COALESCE(SUM(tp1.stock), 0) > :seuil3)) AS avec_stock,
+                (SELECT COUNT(*) FROM produits p2 WHERE p2.id IN (SELECT tp2.produit_id FROM tailles_produits tp2 GROUP BY tp2.produit_id HAVING COALESCE(SUM(tp2.stock), 0) BETWEEN 1 AND :seuil4)) AS stock_faible,
+                (SELECT COUNT(*) FROM produits p3 WHERE (p3.id NOT IN (SELECT tp3.produit_id FROM tailles_produits tp3 WHERE tp3.stock > 0) OR (SELECT COALESCE(SUM(tp4.stock), 0) FROM tailles_produits tp4 WHERE tp4.produit_id = p3.id) = 0) AND p3.statut = 'actif') AS rupture"
+        )->bind(':seuil3', STOCK_SEUIL_ALERTE)
+         ->bind(':seuil4', STOCK_SEUIL_ALERTE)
+         ->single();
+
+        // Derniers mouvements pour le dashboard
+        $derniersMouvements = $this->db->query(
+            "SELECT m.*, p.nom AS produit_nom
+             FROM mouvements_stock m
+             JOIN produits p ON m.produit_id = p.id
+             ORDER BY m.created_at DESC LIMIT 5"
+        )->resultSet();
 
         $this->view('admin/stocks/index', [
             'produits'          => $produits,
@@ -101,23 +108,19 @@ class AdminStocksController extends Controller {
             'totalPages'        => $totalPages,
             'total'             => $total,
             'stats'             => $stats,
+            'derniersMouvements'=> $derniersMouvements,
             'adminNom'          => $_SESSION['admin_nom'],
         ]);
     }
 
     // ── ENTRÉE DE STOCK ─────────────────────────────────────
     public function entree(): void {
-        $error = '';
-        $success = '';
-
-        // Récupérer tous les produits actifs avec leurs tailles
         $produits = $this->db->query(
             "SELECT p.id, p.nom, p.marque,
                     (SELECT chemin FROM images_produits WHERE produit_id = p.id AND est_principale = 1 LIMIT 1) AS image
              FROM produits p WHERE p.statut = 'actif' ORDER BY p.nom ASC"
         )->resultSet();
 
-        // Récupérer les tailles pour tous les produits
         $produitIds = array_column($produits, 'id');
         $taillesParProduit = [];
         if (!empty($produitIds)) {
@@ -130,11 +133,19 @@ class AdminStocksController extends Controller {
             }
         }
 
+        // Dernières entrées
+        $dernieresEntrees = $this->db->query(
+            "SELECT m.*, p.nom AS produit_nom
+             FROM mouvements_stock m
+             JOIN produits p ON m.produit_id = p.id
+             WHERE m.type = 'entree'
+             ORDER BY m.created_at DESC LIMIT 10"
+        )->resultSet();
+
         $this->view('admin/stocks/entree', [
             'produits'          => $produits,
             'taillesParProduit' => $taillesParProduit,
-            'error'             => $error,
-            'success'           => $success,
+            'dernieresEntrees'  => $dernieresEntrees,
             'adminNom'          => $_SESSION['admin_nom'],
         ]);
     }
@@ -152,18 +163,17 @@ class AdminStocksController extends Controller {
         $reference = trim($_POST['reference'] ?? '');
 
         if ($produitId <= 0 || $tailleId <= 0 || $quantite <= 0) {
-            $_SESSION['flash_error'] = 'Paramètres invalides.';
+            $_SESSION['flash_error'] = 'Paramètres invalides. Vérifiez le produit, la taille et la quantité.';
             header('Location: ' . URL_ROOT . '/admin/stocks/entree');
             exit;
         }
 
-        // Récupérer la taille
         $taille = $this->db->query(
             "SELECT tp.*, p.nom AS produit_nom FROM tailles_produits tp JOIN produits p ON tp.produit_id = p.id WHERE tp.id = :id AND tp.produit_id = :pid"
         )->bind(':id', $tailleId)->bind(':pid', $produitId)->single();
 
         if (!$taille) {
-            $_SESSION['flash_error'] = 'Taille introuvable.';
+            $_SESSION['flash_error'] = 'Taille introuvable pour ce produit.';
             header('Location: ' . URL_ROOT . '/admin/stocks/entree');
             exit;
         }
@@ -171,13 +181,11 @@ class AdminStocksController extends Controller {
         $stockAvant = intval($taille['stock']);
         $stockApres = $stockAvant + $quantite;
 
-        // Mettre à jour le stock
         $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
                  ->bind(':stock', $stockApres)
                  ->bind(':id', $tailleId)
                  ->execute();
 
-        // Enregistrer le mouvement
         $this->db->query(
             "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
              VALUES (:produit_id, :taille_id, :taille, 'entree', :quantite, :stock_avant, :stock_apres, :reference)"
@@ -191,14 +199,13 @@ class AdminStocksController extends Controller {
         ->bind(':reference', $reference)
         ->execute();
 
-        $_SESSION['flash_success'] = 'Entrée de stock ajoutée : +' . $quantite . ' pour ' . htmlspecialchars($taille['produit_nom']) . ' (taille ' . $taille['taille'] . ')';
+        $_SESSION['flash_success'] = '✅ Entrée de stock : +' . $quantite . ' ' . htmlspecialchars($taille['produit_nom']) . ' (taille ' . $taille['taille'] . ')';
         header('Location: ' . URL_ROOT . '/admin/stocks/entree');
         exit;
     }
 
     // ── SORTIE DE STOCK ─────────────────────────────────────
     public function sortie(): void {
-        // Récupérer les commandes qui impactent le stock
         $commandes = $this->db->query(
             "SELECT c.id, c.produit_id, c.taille, c.client_nom, c.client_tel, c.statut, c.created_at,
                     p.nom AS produit_nom, p.marque,
@@ -207,12 +214,31 @@ class AdminStocksController extends Controller {
              JOIN produits p ON c.produit_id = p.id
              LEFT JOIN tailles_produits tp ON tp.produit_id = c.produit_id AND tp.taille = c.taille
              WHERE c.statut IN ('nouveau', 'vu', 'confirme')
-             ORDER BY c.created_at DESC"
+             ORDER BY
+                CASE c.statut
+                    WHEN 'nouveau' THEN 1
+                    WHEN 'vu' THEN 2
+                    WHEN 'confirme' THEN 3
+                END ASC,
+                c.created_at DESC"
         )->resultSet();
 
+        // Stats des commandes en attente
+        $statsCommandes = [
+            'nouveau'  => 0,
+            'vu'       => 0,
+            'confirme' => 0,
+        ];
+        foreach ($commandes as $c) {
+            if (isset($statsCommandes[$c['statut']])) {
+                $statsCommandes[$c['statut']]++;
+            }
+        }
+
         $this->view('admin/stocks/sortie', [
-            'commandes' => $commandes,
-            'adminNom'  => $_SESSION['admin_nom'],
+            'commandes'      => $commandes,
+            'statsCommandes' => $statsCommandes,
+            'adminNom'       => $_SESSION['admin_nom'],
         ]);
     }
 
@@ -224,7 +250,7 @@ class AdminStocksController extends Controller {
         }
 
         $commandeId = intval($_POST['commande_id'] ?? 0);
-        $action     = $_POST['action'] ?? ''; // 'confirmer' ou 'annuler'
+        $action     = $_POST['action'] ?? '';
 
         if ($commandeId <= 0 || !in_array($action, ['confirmer', 'annuler'])) {
             $_SESSION['flash_error'] = 'Paramètres invalides.';
@@ -232,7 +258,6 @@ class AdminStocksController extends Controller {
             exit;
         }
 
-        // Récupérer la commande
         $commande = $this->db->query(
             "SELECT c.*, p.nom AS produit_nom FROM commandes c JOIN produits p ON c.produit_id = p.id WHERE c.id = :id"
         )->bind(':id', $commandeId)->single();
@@ -243,13 +268,11 @@ class AdminStocksController extends Controller {
             exit;
         }
 
-        // Récupérer la taille correspondante
         $taille = $this->db->query(
             "SELECT * FROM tailles_produits WHERE produit_id = :pid AND taille = :taille"
         )->bind(':pid', $commande['produit_id'])->bind(':taille', $commande['taille'])->single();
 
         if ($action === 'confirmer') {
-            // Déduire le stock (1 unité par commande)
             if ($taille) {
                 $stockAvant = intval($taille['stock']);
                 $stockApres = max(0, $stockAvant - 1);
@@ -259,7 +282,6 @@ class AdminStocksController extends Controller {
                          ->bind(':id', $taille['id'])
                          ->execute();
 
-                // Enregistrer le mouvement
                 $this->db->query(
                     "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
                      VALUES (:produit_id, :taille_id, :taille, 'commande', 1, :stock_avant, :stock_apres, :reference)"
@@ -273,15 +295,13 @@ class AdminStocksController extends Controller {
                 ->execute();
             }
 
-            // Mettre à jour le statut de la commande
             $this->db->query("UPDATE commandes SET statut = 'confirme' WHERE id = :id")
                      ->bind(':id', $commandeId)
                      ->execute();
 
-            $_SESSION['flash_success'] = 'Commande #' . $commandeId . ' confirmée. Stock déduit.';
+            $_SESSION['flash_success'] = '✅ Commande #' . $commandeId . ' confirmée. Stock déduit (1 unité).';
 
         } elseif ($action === 'annuler') {
-            // Remettre le stock si la commande était déjà confirmée
             if ($commande['statut'] === 'confirme' && $taille) {
                 $stockAvant = intval($taille['stock']);
                 $stockApres = $stockAvant + 1;
@@ -291,7 +311,6 @@ class AdminStocksController extends Controller {
                          ->bind(':id', $taille['id'])
                          ->execute();
 
-                // Enregistrer le mouvement d'annulation
                 $this->db->query(
                     "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
                      VALUES (:produit_id, :taille_id, :taille, 'annulation', 1, :stock_avant, :stock_apres, :reference)"
@@ -309,7 +328,7 @@ class AdminStocksController extends Controller {
                      ->bind(':id', $commandeId)
                      ->execute();
 
-            $_SESSION['flash_success'] = 'Commande #' . $commandeId . ' annulée.';
+            $_SESSION['flash_success'] = '↩ Commande #' . $commandeId . ' annulée.';
         }
 
         header('Location: ' . URL_ROOT . '/admin/stocks/sortie');
@@ -339,15 +358,11 @@ class AdminStocksController extends Controller {
 
         $whereClause = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
 
-        // Total
         $countQuery = $this->db->query("SELECT COUNT(*) AS cnt FROM mouvements_stock m" . $whereClause);
-        foreach ($params as $k => $v) {
-            $countQuery->bind($k, $v);
-        }
+        foreach ($params as $k => $v) { $countQuery->bind($k, $v); }
         $total = $countQuery->single()['cnt'];
         $totalPages = max(1, ceil($total / $limite));
 
-        // Mouvements
         $sql = "SELECT m.*, p.nom AS produit_nom, p.marque
                 FROM mouvements_stock m
                 JOIN produits p ON m.produit_id = p.id"
@@ -356,13 +371,17 @@ class AdminStocksController extends Controller {
                 LIMIT $limite OFFSET $offset";
 
         $query = $this->db->query($sql);
-        foreach ($params as $k => $v) {
-            $query->bind($k, $v);
-        }
+        foreach ($params as $k => $v) { $query->bind($k, $v); }
         $mouvements = $query->resultSet();
 
-        // Liste des produits pour le filtre
         $produits = $this->db->query("SELECT id, nom FROM produits ORDER BY nom ASC")->resultSet();
+
+        // Stats de l'historique
+        $statsHisto = $this->db->query(
+            "SELECT type, COUNT(*) AS cnt, SUM(quantite) AS total_qte
+             FROM mouvements_stock
+             GROUP BY type"
+        )->resultSet();
 
         $this->view('admin/stocks/historique', [
             'mouvements'  => $mouvements,
@@ -372,6 +391,7 @@ class AdminStocksController extends Controller {
             'page'        => $page,
             'totalPages'  => $totalPages,
             'total'       => $total,
+            'statsHisto'  => $statsHisto,
             'adminNom'    => $_SESSION['admin_nom'],
         ]);
     }
@@ -393,7 +413,6 @@ class AdminStocksController extends Controller {
             exit;
         }
 
-        // Récupérer l'ancien stock
         $ancien = $this->db->query("SELECT stock, produit_id, taille FROM tailles_produits WHERE id = :id")
                            ->bind(':id', $tailleId)->single();
 
@@ -411,7 +430,6 @@ class AdminStocksController extends Controller {
                  ->bind(':id', $tailleId)
                  ->execute();
 
-        // Enregistrer le mouvement si différence
         if ($diff !== 0) {
             $type = $diff > 0 ? 'entree' : 'sortie';
             $this->db->query(
@@ -451,7 +469,6 @@ class AdminStocksController extends Controller {
             exit;
         }
 
-        // Vérifier si la taille existe déjà
         $existe = $this->db->query(
             "SELECT id FROM tailles_produits WHERE produit_id = :pid AND taille = :taille"
         )->bind(':pid', $produitId)->bind(':taille', $taille)->single();
@@ -468,7 +485,6 @@ class AdminStocksController extends Controller {
 
         $newId = $this->db->lastInsertId();
 
-        // Enregistrer le mouvement initial
         if ($stock > 0) {
             $this->db->query(
                 "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
@@ -505,6 +521,61 @@ class AdminStocksController extends Controller {
         $this->db->query("DELETE FROM tailles_produits WHERE id = :id")->bind(':id', $tailleId)->execute();
 
         echo json_encode(['success' => true]);
+        exit;
+    }
+
+    // ── EXPORT CSV ─────────────────────────────────────────
+    public function exportCsv(): void {
+        $search  = trim($_GET['search'] ?? '');
+        $statut  = $_GET['statut'] ?? '';
+
+        $where   = [];
+        $params  = [];
+
+        if (!empty($search)) {
+            $where[] = "(p.nom LIKE :search OR p.marque LIKE :search2)";
+            $params[':search'] = '%' . $search . '%';
+            $params[':search2'] = '%' . $search . '%';
+        }
+        if ($statut === 'faible') {
+            $where[] = "(SELECT COALESCE(SUM(tp2.stock), 0) FROM tailles_produits tp2 WHERE tp2.produit_id = p.id) BETWEEN 1 AND :seuil";
+            $params[':seuil'] = STOCK_SEUIL_ALERTE;
+        } elseif ($statut === 'rupture') {
+            $where[] = "p.id NOT IN (SELECT tp3.produit_id FROM tailles_produits tp3 WHERE tp3.stock > 0)";
+        } elseif ($statut === 'ok') {
+            $where[] = "(SELECT COALESCE(SUM(tp4.stock), 0) FROM tailles_produits tp4 WHERE tp4.produit_id = p.id) > :seuil2";
+            $params[':seuil2'] = STOCK_SEUIL_ALERTE;
+        }
+
+        $whereClause = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
+
+        $sql = "SELECT p.nom, p.marque, p.statut,
+                       (SELECT COALESCE(SUM(tp.stock), 0) FROM tailles_produits tp WHERE tp.produit_id = p.id) AS stock_total
+                FROM produits p"
+                . $whereClause .
+                " ORDER BY p.nom ASC";
+
+        $query = $this->db->query($sql);
+        foreach ($params as $k => $v) { $query->bind($k, $v); }
+        $produits = $query->resultSet();
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="stocks_' . date('Y-m-d') . '.csv"');
+
+        $output = fopen('php://output', 'w');
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
+        fputcsv($output, ['Produit', 'Marque', 'Statut', 'Stock Total'], ';');
+
+        foreach ($produits as $p) {
+            fputcsv($output, [
+                $p['nom'],
+                $p['marque'],
+                $p['statut'],
+                intval($p['stock_total']),
+            ], ';');
+        }
+
+        fclose($output);
         exit;
     }
 }

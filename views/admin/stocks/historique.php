@@ -7,6 +7,7 @@
  * @var int    $page       Page courante
  * @var int    $totalPages Nombre total de pages
  * @var int    $total      Nombre total de mouvements
+ * @var array  $statsHisto Stats par type de mouvement
  * @var string $adminNom   Nom de l'admin connecté
  */
 ?>
@@ -21,25 +22,65 @@
 <body>
 
 <aside class="sidebar">
-    <div class="brand"><?= htmlspecialchars(SITE_NAME) ?></div>
-    <div class="admin-info">👤 <?= htmlspecialchars($adminNom ?? '') ?></div>
+    <div class="brand">Vitrin<span>up</span></div>
+    <div class="admin-info">
+        <span class="avatar"><?= strtoupper(substr($adminNom ?? 'A', 0, 1)) ?></span>
+        <?= htmlspecialchars($adminNom ?? '') ?>
+    </div>
     <nav>
-        <a href="<?= URL_ROOT ?>/admin"><span>📊</span> Dashboard</a>
-        <a href="<?= URL_ROOT ?>/admin/produits"><span>👟</span> Produits</a>
-        <a href="<?= URL_ROOT ?>/admin/categories"><span>🗂️</span> Catégories</a>
-        <a href="<?= URL_ROOT ?>/admin/commandes"><span>📦</span> Commandes</a>
-        <a href="<?= URL_ROOT ?>/admin/stocks" class="active"><span>📋</span> Stocks</a>
-        <a href="<?= URL_ROOT ?>" target="_blank"><span>🌐</span> Voir le site</a>
+        <div class="nav-label">Navigation</div>
+        <a href="<?= URL_ROOT ?>/admin"><span class="icon">📊</span> Dashboard</a>
+        <a href="<?= URL_ROOT ?>/admin/produits"><span class="icon">👟</span> Produits</a>
+        <a href="<?= URL_ROOT ?>/admin/categories"><span class="icon">🗂️</span> Catégories</a>
+        <a href="<?= URL_ROOT ?>/admin/commandes"><span class="icon">📦</span> Commandes</a>
+        <a href="<?= URL_ROOT ?>/admin/stocks" class="active"><span class="icon">📋</span> Stocks</a>
+        <a href="<?= URL_ROOT ?>" target="_blank"><span class="icon">🌐</span> Voir le site</a>
     </nav>
-    <div class="logout"><a href="<?= URL_ROOT ?>/admin/logout">🚪 Déconnexion</a></div>
+    <div class="logout"><a href="<?= URL_ROOT ?>/admin/logout"><span>🚪</span> <span>Déconnexion</span></a></div>
 </aside>
 
 <main class="main">
     <div class="page-header">
-        <h1>📜 Historique des mouvements</h1>
+        <div>
+            <h1>📜 Historique des mouvements</h1>
+            <div class="subtitle">Traçabilité complète des entrées, sorties, commandes et annulations</div>
+        </div>
         <a href="<?= URL_ROOT ?>/admin/stocks" class="btn-back">← Retour aux stocks</a>
     </div>
 
+    <?php if (!empty($_SESSION['flash_success'])): ?>
+        <div class="flash-message flash-success">✅ <?= htmlspecialchars($_SESSION['flash_success']) ?></div>
+        <?php unset($_SESSION['flash_success']); ?>
+    <?php endif; ?>
+    <?php if (!empty($_SESSION['flash_error'])): ?>
+        <div class="flash-message flash-error">❌ <?= htmlspecialchars($_SESSION['flash_error']) ?></div>
+        <?php unset($_SESSION['flash_error']); ?>
+    <?php endif; ?>
+
+    <!-- Stats historiques -->
+    <?php if (!empty($statsHisto)): ?>
+    <div class="stats-grid">
+        <?php
+        $typeLabels = [
+            'entree' => ['label' => '📥 Entrées', 'class' => 'green'],
+            'sortie' => ['label' => '📤 Sorties', 'class' => 'orange'],
+            'commande' => ['label' => '📦 Commandes', 'class' => 'gold'],
+            'annulation' => ['label' => '↩ Annulations', 'class' => 'red'],
+        ];
+        foreach ($statsHisto as $s):
+            $info = $typeLabels[$s['type']] ?? ['label' => $s['type'], 'class' => ''];
+        ?>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="label"><?= $info['label'] ?></div>
+                <div class="value <?= $info['class'] ?>"><?= intval($s['cnt']) ?></div>
+                <div class="stat-change up"><?= intval($s['total_qte']) ?> unités</div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- Filtres -->
     <div class="card">
         <form method="GET" action="<?= URL_ROOT ?>/admin/stocks/historique" class="filtres">
             <select name="type">
@@ -62,58 +103,67 @@
         </form>
     </div>
 
+    <!-- Tableau des mouvements -->
     <div class="card">
-        <div class="total-info"><?= $total ?> mouvement<?= $total > 1 ? 's' : '' ?> trouvé<?= $total > 1 ? 's' : '' ?></div>
+        <div class="card-header">
+            <h2>📋 Mouvements de stock</h2>
+            <span class="total-info"><?= $total ?> mouvement<?= $total > 1 ? 's' : '' ?> trouvé<?= $total > 1 ? 's' : '' ?></span>
+        </div>
 
         <?php if (empty($mouvements)): ?>
-            <p class="empty-msg">Aucun mouvement trouvé.</p>
+            <div class="empty-msg">
+                <div class="empty-icon">📜</div>
+                <p>Aucun mouvement trouvé.</p>
+            </div>
         <?php else: ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Produit</th>
-                        <th>Taille</th>
-                        <th>Type</th>
-                        <th>Quantité</th>
-                        <th>Stock avant</th>
-                        <th>Stock après</th>
-                        <th>Référence</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($mouvements as $m):
-                        $typeLabel = [
-                            'entree' => '📥 Entrée',
-                            'sortie' => '📤 Sortie',
-                            'commande' => '📦 Commande',
-                            'annulation' => '↩ Annulation'
-                        ];
-                        $qte = intval($m['quantite']);
-                        $estPositif = in_array($m['type'], ['entree', 'annulation']);
-                    ?>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
                         <tr>
-                            <td><small style="color:#888"><?= date('d/m/Y H:i', strtotime($m['created_at'])) ?></small></td>
-                            <td>
-                                <strong><?= htmlspecialchars($m['produit_nom']) ?></strong>
-                                <?php if ($m['marque']): ?>
-                                    <br><small style="color:#888"><?= htmlspecialchars($m['marque']) ?></small>
-                                <?php endif; ?>
-                            </td>
-                            <td><?= htmlspecialchars($m['taille']) ?></td>
-                            <td><span class="type-badge type-<?= $m['type'] ?>"><?= $typeLabel[$m['type']] ?? $m['type'] ?></span></td>
-                            <td>
-                                <span class="<?= $estPositif ? 'qte-positive' : 'qte-negative' ?>">
-                                    <?= $estPositif ? '+' : '-' ?><?= $qte ?>
-                                </span>
-                            </td>
-                            <td><?= intval($m['stock_avant']) ?></td>
-                            <td><?= intval($m['stock_apres']) ?></td>
-                            <td><small style="color:#888"><?= htmlspecialchars($m['reference'] ?? '-') ?></small></td>
+                            <th>Date</th>
+                            <th>Produit</th>
+                            <th>Taille</th>
+                            <th>Type</th>
+                            <th>Quantité</th>
+                            <th>Stock avant</th>
+                            <th>Stock après</th>
+                            <th>Référence</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($mouvements as $m):
+                            $typeLabel = [
+                                'entree' => '📥 Entrée',
+                                'sortie' => '📤 Sortie',
+                                'commande' => '📦 Commande',
+                                'annulation' => '↩ Annulation'
+                            ];
+                            $qte = intval($m['quantite']);
+                            $estPositif = in_array($m['type'], ['entree', 'annulation']);
+                        ?>
+                            <tr>
+                                <td><small style="color:var(--text-muted)"><?= date('d/m/Y H:i', strtotime($m['created_at'])) ?></small></td>
+                                <td>
+                                    <strong><?= htmlspecialchars($m['produit_nom']) ?></strong>
+                                    <?php if ($m['marque']): ?>
+                                        <br><small style="color:var(--text-muted)"><?= htmlspecialchars($m['marque']) ?></small>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($m['taille']) ?></td>
+                                <td><span class="type-badge type-<?= $m['type'] ?>"><?= $typeLabel[$m['type']] ?? $m['type'] ?></span></td>
+                                <td>
+                                    <span class="<?= $estPositif ? 'qte-positive' : 'qte-negative' ?>">
+                                        <?= $estPositif ? '+' : '-' ?><?= $qte ?>
+                                    </span>
+                                </td>
+                                <td><?= intval($m['stock_avant']) ?></td>
+                                <td><?= intval($m['stock_apres']) ?></td>
+                                <td><small style="color:var(--text-muted)"><?= htmlspecialchars($m['reference'] ?? '-') ?></small></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
 
             <?php if ($totalPages > 1): ?>
             <div class="pagination">
@@ -161,5 +211,10 @@
         <?php endif; ?>
     </div>
 </main>
+
+<script>
+const URL_ROOT = '<?= URL_ROOT ?>';
+</script>
+<script src="<?= URL_ROOT ?>/assets/js/admin.js"></script>
 </body>
 </html>
