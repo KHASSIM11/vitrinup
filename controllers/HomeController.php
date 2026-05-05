@@ -5,12 +5,12 @@ require_once __DIR__ . '/../core/Database.php';
 class HomeController extends Controller {
 
     /**
-     * Affiche la page d'accueil avec les 8 derniers produits actifs.
+     * Affiche la page d'accueil modernisée.
      */
     public function index(): void {
         $db = new Database();
 
-        // Récupération des 8 derniers produits actifs avec leur image principale
+        // 8 derniers produits actifs
         $produits = $db->query(
             "SELECT p.id, p.nom, p.slug, p.prix, p.prix_promo, p.genre, p.marque,
                     i.chemin AS image
@@ -21,14 +21,29 @@ class HomeController extends Controller {
              LIMIT 8"
         )->resultSet();
 
-        // Récupération des catégories pour la bannière (non utilisée dans la vue actuelle)
+        // Produits en promo (prix_promo > 0)
+        $promos = $db->query(
+            "SELECT p.id, p.nom, p.slug, p.prix, p.prix_promo, p.genre, p.marque,
+                    i.chemin AS image
+             FROM produits p
+             LEFT JOIN images_produits i ON p.id = i.produit_id AND i.est_principale = 1
+             WHERE p.statut = 'actif' AND p.prix_promo IS NOT NULL AND p.prix_promo > 0
+             ORDER BY RAND()
+             LIMIT 4"
+        )->resultSet();
+
+        // Catégories avec nombre de produits
         $categories = $db->query(
-            "SELECT * FROM categories ORDER BY ordre ASC"
+            "SELECT c.*, 
+                    (SELECT COUNT(*) FROM produits p WHERE p.categorie_id = c.id AND p.statut = 'actif') AS nb_produits
+             FROM categories c
+             ORDER BY c.ordre ASC"
         )->resultSet();
 
         $data = [
             'title'      => SITE_NAME,
-            'produits' => $produits,   // <-- clé corrigée pour correspondre à la vue
+            'produits'   => $produits,
+            'promos'     => $promos,
             'categories' => $categories,
         ];
 
