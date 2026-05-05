@@ -1,3 +1,10 @@
+<?php
+/** @var string $title Titre de la page */
+/** @var array $produits Liste des produits */
+/** @var array $categories Liste des catégories */
+/** @var string $filtreGenre Filtre genre actif */
+/** @var string $filtreCategorie Filtre catégorie actif */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -499,19 +506,16 @@ if (isset($_SESSION['panier'])) {
 <div class="filtres">
     <!-- Filtres genre -->
     <div class="filtres-genre">
-        <a href="<?= URL_ROOT ?>/catalogue<?= !empty($filtreCategorie) ? '?categorie_id=' . $filtreCategorie : '' ?>"
-           class="btn-filtre <?= empty($filtreGenre) ? 'actif' : '' ?>">Tous</a>
-
-        <?php foreach (['homme' => 'Homme', 'femme' => 'Femme', 'enfant' => 'Enfant', 'mixte' => 'Mixte'] as $val => $label): ?>
-            <a href="<?= URL_ROOT ?>/catalogue?genre=<?= $val ?><?= !empty($filtreCategorie) ? '&categorie_id=' . $filtreCategorie : '' ?>"
-               class="btn-filtre <?= $filtreGenre === $val ? 'actif' : '' ?>">
+        <button type="button" class="btn-filtre <?= empty($filtreGenre) ? 'actif' : '' ?>" onclick="appliquerFiltre('genre', '')">Tous</button>
+        <?php foreach (['homme' => 'Homme', 'femme' => 'Femme', 'enfant' => 'Enfant'] as $val => $label): ?>
+            <button type="button" class="btn-filtre <?= $filtreGenre === $val ? 'actif' : '' ?>" onclick="appliquerFiltre('genre', '<?= $val ?>')">
                 <?= $label ?>
-            </a>
+            </button>
         <?php endforeach; ?>
     </div>
 
     <!-- Filtre catégorie -->
-    <select class="select-categorie" onchange="filtrerCategorie(this.value)">
+    <select class="select-categorie" id="selectCategorie" onchange="appliquerFiltre('categorie', this.value)">
         <option value="">Toutes les catégories</option>
         <?php foreach ($categories as $cat): ?>
             <option value="<?= $cat['id'] ?>" <?= $filtreCategorie == $cat['id'] ? 'selected' : '' ?>>
@@ -580,11 +584,29 @@ if (isset($_SESSION['panier'])) {
 </footer>
 
 <script>
-function filtrerCategorie(id) {
-    const genre = new URLSearchParams(window.location.search).get('genre') || '';
-    let url = '<?= URL_ROOT ?>/catalogue?';
-    if (genre) url += 'genre=' + genre + '&';
-    if (id)    url += 'categorie_id=' + id;
+// Synchronisation des filtres : boutons genre + select catégorie
+function appliquerFiltre(type, valeur) {
+    const params = new URLSearchParams(window.location.search);
+    
+    if (type === 'genre') {
+        if (valeur) {
+            params.set('genre', valeur);
+        } else {
+            params.delete('genre');
+        }
+    } else if (type === 'categorie') {
+        if (valeur) {
+            params.set('categorie_id', valeur);
+        } else {
+            params.delete('categorie_id');
+        }
+    }
+    
+    // Construire l'URL
+    let url = '<?= URL_ROOT ?>/catalogue';
+    const qs = params.toString();
+    if (qs) url += '?' + qs;
+    
     window.location.href = url;
 }
 
