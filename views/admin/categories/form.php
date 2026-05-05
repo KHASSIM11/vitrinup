@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var array|null $categorie Catégorie à modifier (null si ajout)
+ * @var string     $adminNom  Nom de l'admin connecté
+ * @var string     $error     Message d'erreur éventuel
+ */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>

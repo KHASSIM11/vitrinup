@@ -1,3 +1,13 @@
+<?php
+/**
+ * @var string $title          Titre de la page
+ * @var array  $articles       Articles du panier
+ * @var int    $nombreArticles Nombre d'articles
+ * @var float  $total          Total du panier
+ * @var float  $economie       Économie réalisée
+ * @var bool   $panierVide     Panier vide ou non
+ */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
