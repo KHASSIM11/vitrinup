@@ -1,3 +1,11 @@
+<?php
+/** @var string $adminNom Nom de l'admin connecté */
+/** @var int $totalActifs Nombre de produits actifs */
+/** @var int $totalInactifs Nombre de produits inactifs */
+/** @var int $totalCommandes Nombre total de commandes */
+/** @var int $nouvellesCommandes Nombre de nouvelles commandes */
+/** @var array $dernieresCmds Dernières commandes */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -108,9 +116,12 @@
             display: inline-block; padding: 3px 10px;
             border-radius: 20px; font-size: 0.75rem; font-weight: 600;
         }
-        .badge-nouveau { background: #fff3e0; color: #e65100; }
+        .badge-en_attente { background: #fff3e0; color: #e65100; }
+        .badge-confirmee,
         .badge-confirme { background: #e8f5e9; color: #2e7d32; }
+        .badge-annulee,
         .badge-annule { background: #ffebee; color: #c62828; }
+        .badge-livree { background: #e3f2fd; color: #1565c0; }
         .empty-msg { text-align: center; color: #aaa; padding: 30px; }
 
         @media (max-width: 900px) {
@@ -188,8 +199,8 @@
                             <td><?= htmlspecialchars($cmd['client_nom'] ?? '—') ?></td>
                             <td><?= htmlspecialchars($cmd['taille'] ?? '—') ?></td>
                             <td>
-                                <span class="badge badge-<?= $cmd['statut'] ?>">
-                                    <?= ucfirst($cmd['statut']) ?>
+                                <span class="badge badge-<?= htmlspecialchars($cmd['statut']) ?>">
+                                    <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $cmd['statut']))) ?>
                                 </span>
                             </td>
                             <td><?= date('d/m/Y H:i', strtotime($cmd['created_at'])) ?></td>
