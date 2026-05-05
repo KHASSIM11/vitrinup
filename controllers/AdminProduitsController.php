@@ -99,6 +99,7 @@ class AdminProduitsController extends Controller {
             'produit'    => null,
             'categories' => $categories,
             'tailles'    => [],
+            'images'     => [],
             'error'      => $error,
             'adminNom'   => $_SESSION['admin_nom'],
         ]);
