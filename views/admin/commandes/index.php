@@ -164,6 +164,7 @@
                         <th>Client</th>
                         <th>Produit</th>
                         <th>Taille</th>
+                        <th>Qté</th>
                         <th>Statut</th>
                         <th>Date</th>
                         <th>Actions</th>
@@ -183,6 +184,7 @@
                             </td>
                             <td><?= htmlspecialchars($cmd['produit_nom']) ?></td>
                             <td><?= htmlspecialchars($cmd['taille'] ?? '—') ?></td>
+                            <td><strong><?= intval($cmd['quantite'] ?? 1) ?></strong></td>
                             <td>
                                 <span class="badge badge-<?= $cmd['statut'] ?>">
                                     <?= ucfirst($cmd['statut']) ?>

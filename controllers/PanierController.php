@@ -224,15 +224,44 @@ class PanierController extends Controller {
         // Sauvegarder chaque article comme une commande séparée
         foreach ($articles as $article) {
             $this->db->query(
-                "INSERT INTO commandes (produit_id, client_nom, client_tel, taille, message, statut)
-                 VALUES (:produit_id, :client_nom, :client_tel, :taille, :message, 'nouveau')"
+                "INSERT INTO commandes (produit_id, client_nom, client_tel, taille, quantite, message, statut)
+                 VALUES (:produit_id, :client_nom, :client_tel, :taille, :quantite, :message, 'nouveau')"
             )
             ->bind(':produit_id', $article['produit_id'])
             ->bind(':client_nom', $nom)
             ->bind(':client_tel', $telephone)
             ->bind(':taille', $article['taille'])
+            ->bind(':quantite', $article['quantite'])
             ->bind(':message', $message)
             ->execute();
+
+            // Déduire le stock immédiatement
+            $tailleStock = $this->db->query(
+                "SELECT id, stock FROM tailles_produits WHERE produit_id = :pid AND taille = :taille"
+            )->bind(':pid', $article['produit_id'])->bind(':taille', $article['taille'])->single();
+
+            if ($tailleStock) {
+                $stockAvant = intval($tailleStock['stock']);
+                $stockApres = max(0, $stockAvant - $article['quantite']);
+
+                $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
+                         ->bind(':stock', $stockApres)
+                         ->bind(':id', $tailleStock['id'])
+                         ->execute();
+
+                $this->db->query(
+                    "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
+                     VALUES (:produit_id, :taille_id, :taille, 'commande', :quantite, :stock_avant, :stock_apres, :reference)"
+                )
+                ->bind(':produit_id', $article['produit_id'])
+                ->bind(':taille_id', $tailleStock['id'])
+                ->bind(':taille', $article['taille'])
+                ->bind(':quantite', $article['quantite'])
+                ->bind(':stock_avant', $stockAvant)
+                ->bind(':stock_apres', $stockApres)
+                ->bind(':reference', 'Commande client - ' . $nom)
+                ->execute();
+            }
         }
 
         // Construire le message WhatsApp

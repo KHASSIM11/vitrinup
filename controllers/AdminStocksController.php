@@ -207,7 +207,7 @@ class AdminStocksController extends Controller {
     // ── SORTIE DE STOCK ─────────────────────────────────────
     public function sortie(): void {
         $commandes = $this->db->query(
-            "SELECT c.id, c.produit_id, c.taille, c.client_nom, c.client_tel, c.statut, c.created_at,
+            "SELECT c.id, c.produit_id, c.taille, c.quantite, c.client_nom, c.client_tel, c.statut, c.created_at,
                     p.nom AS produit_nom, p.marque,
                     tp.id AS taille_id, tp.stock AS stock_actuel
              FROM commandes c
@@ -272,10 +272,12 @@ class AdminStocksController extends Controller {
             "SELECT * FROM tailles_produits WHERE produit_id = :pid AND taille = :taille"
         )->bind(':pid', $commande['produit_id'])->bind(':taille', $commande['taille'])->single();
 
+        $quantiteCommande = max(1, intval($commande['quantite'] ?? 1));
+
         if ($action === 'confirmer') {
             if ($taille) {
                 $stockAvant = intval($taille['stock']);
-                $stockApres = max(0, $stockAvant - 1);
+                $stockApres = max(0, $stockAvant - $quantiteCommande);
 
                 $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
                          ->bind(':stock', $stockApres)
@@ -284,11 +286,12 @@ class AdminStocksController extends Controller {
 
                 $this->db->query(
                     "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
-                     VALUES (:produit_id, :taille_id, :taille, 'commande', 1, :stock_avant, :stock_apres, :reference)"
+                     VALUES (:produit_id, :taille_id, :taille, 'commande', :quantite, :stock_avant, :stock_apres, :reference)"
                 )
                 ->bind(':produit_id', $commande['produit_id'])
                 ->bind(':taille_id', $taille['id'])
                 ->bind(':taille', $commande['taille'])
+                ->bind(':quantite', $quantiteCommande)
                 ->bind(':stock_avant', $stockAvant)
                 ->bind(':stock_apres', $stockApres)
                 ->bind(':reference', 'Commande #' . $commandeId . ' - ' . $commande['client_nom'])
@@ -299,12 +302,12 @@ class AdminStocksController extends Controller {
                      ->bind(':id', $commandeId)
                      ->execute();
 
-            $_SESSION['flash_success'] = '✅ Commande #' . $commandeId . ' confirmée. Stock déduit (1 unité).';
+            $_SESSION['flash_success'] = '✅ Commande #' . $commandeId . ' confirmée. Stock déduit (' . $quantiteCommande . ' unité' . ($quantiteCommande > 1 ? 's' : '') . ').';
 
         } elseif ($action === 'annuler') {
             if ($commande['statut'] === 'confirme' && $taille) {
                 $stockAvant = intval($taille['stock']);
-                $stockApres = $stockAvant + 1;
+                $stockApres = $stockAvant + $quantiteCommande;
 
                 $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
                          ->bind(':stock', $stockApres)
@@ -313,11 +316,12 @@ class AdminStocksController extends Controller {
 
                 $this->db->query(
                     "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
-                     VALUES (:produit_id, :taille_id, :taille, 'annulation', 1, :stock_avant, :stock_apres, :reference)"
+                     VALUES (:produit_id, :taille_id, :taille, 'annulation', :quantite, :stock_avant, :stock_apres, :reference)"
                 )
                 ->bind(':produit_id', $commande['produit_id'])
                 ->bind(':taille_id', $taille['id'])
                 ->bind(':taille', $commande['taille'])
+                ->bind(':quantite', $quantiteCommande)
                 ->bind(':stock_avant', $stockAvant)
                 ->bind(':stock_apres', $stockApres)
                 ->bind(':reference', 'Annulation commande #' . $commandeId)

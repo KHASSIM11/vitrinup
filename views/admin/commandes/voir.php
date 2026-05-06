@@ -122,6 +122,10 @@
                 <span class="label">Taille</span>
                 <span class="value"><?= htmlspecialchars($commande['taille'] ?? '—') ?></span>
             </div>
+            <div class="info-row">
+                <span class="label">Quantité</span>
+                <span class="value"><?= intval($commande['quantite'] ?? 1) ?></span>
+            </div>
 
             <!-- Changement de statut -->
             <form method="POST" action="<?= URL_ROOT ?>/admin/commandes/statut/<?= $commande['id'] ?>" class="statut-form">

@@ -113,6 +113,105 @@ class AdminCommandesController extends Controller {
             exit;
         }
 
+        // Récupérer la commande actuelle pour connaître l'ancien statut
+        $commande = $this->db->query(
+            "SELECT * FROM commandes WHERE id = :id"
+        )->bind(':id', $id)->single();
+
+        if (!$commande) {
+            $_SESSION['flash_error'] = 'Commande introuvable.';
+            header('Location: ' . URL_ROOT . '/admin/commandes');
+            exit;
+        }
+
+        $ancienStatut = $commande['statut'];
+        $quantiteCommande = max(1, intval($commande['quantite'] ?? 1));
+
+        // Gérer le stock selon les transitions de statut
+        if ($ancienStatut !== $nouveauStatut) {
+            $taille = $this->db->query(
+                "SELECT * FROM tailles_produits WHERE produit_id = :pid AND taille = :taille"
+            )->bind(':pid', $commande['produit_id'])->bind(':taille', $commande['taille'])->single();
+
+            // Si on confirme : déduire le stock
+            if ($nouveauStatut === 'confirme' && $ancienStatut !== 'confirme') {
+                if ($taille) {
+                    $stockAvant = intval($taille['stock']);
+                    $stockApres = max(0, $stockAvant - $quantiteCommande);
+
+                    $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
+                             ->bind(':stock', $stockApres)
+                             ->bind(':id', $taille['id'])
+                             ->execute();
+
+                    $this->db->query(
+                        "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
+                         VALUES (:produit_id, :taille_id, :taille, 'commande', :quantite, :stock_avant, :stock_apres, :reference)"
+                    )
+                    ->bind(':produit_id', $commande['produit_id'])
+                    ->bind(':taille_id', $taille['id'])
+                    ->bind(':taille', $commande['taille'])
+                    ->bind(':quantite', $quantiteCommande)
+                    ->bind(':stock_avant', $stockAvant)
+                    ->bind(':stock_apres', $stockApres)
+                    ->bind(':reference', 'Commande #' . $id . ' - ' . $commande['client_nom'])
+                    ->execute();
+                }
+            }
+
+            // Si on annule depuis "confirme" : remettre le stock
+            if ($nouveauStatut === 'annule' && $ancienStatut === 'confirme') {
+                if ($taille) {
+                    $stockAvant = intval($taille['stock']);
+                    $stockApres = $stockAvant + $quantiteCommande;
+
+                    $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
+                             ->bind(':stock', $stockApres)
+                             ->bind(':id', $taille['id'])
+                             ->execute();
+
+                    $this->db->query(
+                        "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
+                         VALUES (:produit_id, :taille_id, :taille, 'annulation', :quantite, :stock_avant, :stock_apres, :reference)"
+                    )
+                    ->bind(':produit_id', $commande['produit_id'])
+                    ->bind(':taille_id', $taille['id'])
+                    ->bind(':taille', $commande['taille'])
+                    ->bind(':quantite', $quantiteCommande)
+                    ->bind(':stock_avant', $stockAvant)
+                    ->bind(':stock_apres', $stockApres)
+                    ->bind(':reference', 'Annulation commande #' . $id)
+                    ->execute();
+                }
+            }
+
+            // Si on repasse de "annule" à "confirme" : re-déduire le stock
+            if ($nouveauStatut === 'confirme' && $ancienStatut === 'annule') {
+                if ($taille) {
+                    $stockAvant = intval($taille['stock']);
+                    $stockApres = max(0, $stockAvant - $quantiteCommande);
+
+                    $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
+                             ->bind(':stock', $stockApres)
+                             ->bind(':id', $taille['id'])
+                             ->execute();
+
+                    $this->db->query(
+                        "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
+                         VALUES (:produit_id, :taille_id, :taille, 'commande', :quantite, :stock_avant, :stock_apres, :reference)"
+                    )
+                    ->bind(':produit_id', $commande['produit_id'])
+                    ->bind(':taille_id', $taille['id'])
+                    ->bind(':taille', $commande['taille'])
+                    ->bind(':quantite', $quantiteCommande)
+                    ->bind(':stock_avant', $stockAvant)
+                    ->bind(':stock_apres', $stockApres)
+                    ->bind(':reference', 'Commande #' . $id . ' - ' . $commande['client_nom'])
+                    ->execute();
+                }
+            }
+        }
+
         $this->db->query("UPDATE commandes SET statut = :statut WHERE id = :id")
                  ->bind(':statut', $nouveauStatut)
                  ->bind(':id', $id)

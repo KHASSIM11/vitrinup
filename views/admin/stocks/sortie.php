@@ -92,6 +92,7 @@
                             <th>Client</th>
                             <th>Produit</th>
                             <th>Taille</th>
+                            <th>Qté</th>
                             <th>Stock actuel</th>
                             <th>Statut</th>
                             <th>Date</th>
@@ -101,6 +102,7 @@
                     <tbody>
                         <?php foreach ($commandes as $c):
                             $stockActuel = intval($c['stock_actuel']);
+                            $quantiteCmd = intval($c['quantite'] ?? 1);
                             $classeStock = $stockActuel <= 0 ? 'rupture' : ($stockActuel <= STOCK_SEUIL_ALERTE ? 'faible' : 'ok');
                         ?>
                             <tr class="<?= $stockActuel <= 0 ? 'row-rupture' : ($stockActuel <= STOCK_SEUIL_ALERTE ? 'row-faible' : '') ?>">
@@ -118,6 +120,7 @@
                                     <?php endif; ?>
                                 </td>
                                 <td><strong><?= htmlspecialchars($c['taille']) ?></strong></td>
+                                <td><strong><?= $quantiteCmd ?></strong></td>
                                 <td>
                                     <span class="stock-actuel <?= $classeStock ?>">
                                         <?= $stockActuel ?> unité<?= $stockActuel > 1 ? 's' : '' ?>
@@ -136,7 +139,7 @@
                                         <form method="POST" action="<?= URL_ROOT ?>/admin/stocks/ajouterSortie" style="display:inline">
                                             <input type="hidden" name="commande_id" value="<?= intval($c['id']) ?>">
                                             <input type="hidden" name="action" value="confirmer">
-                                            <button type="submit" class="btn-action btn-confirmer" data-confirm="Confirmer cette commande ? 1 unité sera déduite du stock.">✅ Confirmer</button>
+                                            <button type="submit" class="btn-action btn-confirmer" data-confirm="Confirmer cette commande ? <?= $quantiteCmd ?> unité<?= $quantiteCmd > 1 ? 's' : '' ?> sera déduite du stock.">✅ Confirmer</button>
                                         </form>
                                         <form method="POST" action="<?= URL_ROOT ?>/admin/stocks/ajouterSortie" style="display:inline;margin-left:4px;">
                                             <input type="hidden" name="commande_id" value="<?= intval($c['id']) ?>">

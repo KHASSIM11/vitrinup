@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `commandes` (
     `client_nom` varchar(255) DEFAULT NULL,
     `client_tel` varchar(30) DEFAULT NULL,
     `taille` varchar(20) DEFAULT NULL,
+    `quantite` int(10) UNSIGNED NOT NULL DEFAULT 1,
     `message` text DEFAULT NULL,
     `statut` enum('nouveau','vu','confirme','annule') NOT NULL DEFAULT 'nouveau',
     `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
