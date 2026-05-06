@@ -240,8 +240,28 @@
         hamburger.addEventListener('click', function() {
             var nav = document.querySelector('.sidebar nav');
             var logout = document.querySelector('.sidebar .logout');
+            var adminInfo = document.querySelector('.sidebar .admin-info');
+            var isOpen = nav ? nav.classList.contains('open') : false;
+
             if (nav) nav.classList.toggle('open');
             if (logout) logout.classList.toggle('open');
+            if (adminInfo) adminInfo.classList.toggle('open');
+
+            // Changer l'icône du hamburger
+            this.textContent = isOpen ? '☰' : '✕';
+        });
+
+        // Fermer le menu quand on clique sur un lien
+        document.querySelectorAll('.sidebar nav a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                var nav = document.querySelector('.sidebar nav');
+                var logout = document.querySelector('.sidebar .logout');
+                var adminInfo = document.querySelector('.sidebar .admin-info');
+                if (nav) nav.classList.remove('open');
+                if (logout) logout.classList.remove('open');
+                if (adminInfo) adminInfo.classList.remove('open');
+                if (hamburger) hamburger.textContent = '☰';
+            });
         });
     }
 
