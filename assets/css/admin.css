@@ -698,6 +698,56 @@ tr.row-faible td { background: rgba(255, 152, 0, 0.03); }
 /* ── Search Highlight ───────────────────────────────────── */
 mark { background: rgba(201, 168, 76, 0.2); padding: 0 2px; border-radius: 2px; }
 
+/* ── Stock détaillé (badges taille) ──────────────────────── */
+.stock-detail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 280px;
+}
+.taille-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.3;
+    border: 1px solid transparent;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.taille-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.taille-badge.taille-ok {
+    background: var(--green-bg);
+    color: var(--green-text);
+    border-color: #a5d6a7;
+}
+.taille-badge.taille-faible {
+    background: var(--orange-bg);
+    color: var(--orange-text);
+    border-color: #ffcc80;
+}
+.taille-badge.taille-rupture {
+    background: var(--red-bg);
+    color: var(--red-text);
+    border-color: #ef9a9a;
+}
+.taille-label {
+    opacity: 0.85;
+}
+.taille-qte {
+    background: rgba(0,0,0,0.08);
+    padding: 0 5px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    min-width: 18px;
+    text-align: center;
+}
+
 /* ── Loading Spinner ────────────────────────────────────── */
 .spinner {
     display: inline-block; width: 18px; height: 18px;

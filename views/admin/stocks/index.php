@@ -143,6 +143,7 @@
                             <th>Produit</th>
                             <th>Statut</th>
                             <th>Stock total</th>
+                            <th>Stock détaillé</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -154,6 +155,8 @@
                             $maxStock = 20;
                             $pct = min(100, ($stockTotal / $maxStock) * 100);
                             $barClass = $stockTotal === 0 ? 'rupture' : ($stockTotal <= STOCK_SEUIL_ALERTE ? 'faible' : 'ok');
+                            // Tailles détaillées
+                            $tailles = $taillesParProduit[$p['id']] ?? [];
                         ?>
                             <tr class="<?= $classeRow ?>">
                                 <td>
@@ -177,6 +180,23 @@
                                     <div class="stock-bar">
                                         <div class="fill <?= $barClass ?>" style="width:<?= $pct ?>%"></div>
                                     </div>
+                                </td>
+                                <td>
+                                    <?php if (!empty($tailles)): ?>
+                                        <div class="stock-detail">
+                                            <?php foreach ($tailles as $t):
+                                                $s = intval($t['stock']);
+                                                $cls = $s === 0 ? 'taille-rupture' : ($s <= STOCK_SEUIL_ALERTE ? 'taille-faible' : 'taille-ok');
+                                            ?>
+                                                <span class="taille-badge <?= $cls ?>">
+                                                    <span class="taille-label"><?= htmlspecialchars($t['taille']) ?></span>
+                                                    <span class="taille-qte"><?= $s ?></span>
+                                                </span>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="text-muted">—</span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
