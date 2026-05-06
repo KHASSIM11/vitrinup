@@ -143,7 +143,6 @@
                             <th>Produit</th>
                             <th>Statut</th>
                             <th>Stock total</th>
-                            <th>Tailles / Stock</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,7 +150,6 @@
                             $stockTotal = intval($p['stock_total']);
                             $classeStock = $stockTotal === 0 ? 'stock-rupture' : ($stockTotal <= STOCK_SEUIL_ALERTE ? 'stock-faible' : 'stock-ok');
                             $classeRow = $stockTotal === 0 ? 'row-rupture' : ($stockTotal <= STOCK_SEUIL_ALERTE ? 'row-faible' : '');
-                            $tailles = $taillesParProduit[$p['id']] ?? [];
                             // Barre de progression
                             $maxStock = 20;
                             $pct = min(100, ($stockTotal / $maxStock) * 100);
@@ -178,24 +176,6 @@
                                     </span>
                                     <div class="stock-bar">
                                         <div class="fill <?= $barClass ?>" style="width:<?= $pct ?>%"></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="tailles-list" id="tailles-<?= intval($p['id']) ?>">
-                                        <?php if (!empty($tailles)): foreach ($tailles as $t): ?>
-                                            <div class="taille-item">
-                                                <span><?= htmlspecialchars($t['taille']) ?>:</span>
-                                                <input type="number" class="stock-input" value="<?= intval($t['stock']) ?>"
-                                                       min="0" data-taille-id="<?= intval($t['id']) ?>"
-                                                       data-produit-id="<?= intval($p['id']) ?>">
-                                                <button class="btn-del-taille" data-taille-id="<?= intval($t['id']) ?>" title="Supprimer">✕</button>
-                                            </div>
-                                        <?php endforeach; endif; ?>
-                                    </div>
-                                    <div class="add-taille-form">
-                                        <input type="text" placeholder="Taille" id="new-taille-<?= intval($p['id']) ?>">
-                                        <input type="number" placeholder="Stock" id="new-stock-<?= intval($p['id']) ?>" value="0" min="0">
-                                        <button class="btn-add-taille" data-produit-id="<?= intval($p['id']) ?>">+ Ajouter</button>
                                     </div>
                                 </td>
                             </tr>
