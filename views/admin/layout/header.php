@@ -23,7 +23,7 @@ $_initial    = strtoupper(substr($_adminNom ?: 'A', 0, 1));
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($pageTitle ?? 'Admin') ?> — <?= htmlspecialchars(SITE_NAME) ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/admin.css">
+    <link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/admin.css?v=3">
 </head>
 <body>
 
