@@ -791,6 +791,7 @@
 
 <script>
 const URL_ROOT = '<?= URL_ROOT ?>';
+const UPLOAD_URL = '<?= UPLOAD_URL ?>';
 const STOCK_SEUIL_ALERTE = <?= STOCK_SEUIL_ALERTE ?>;
 const taillesData = <?= json_encode($taillesParProduit) ?>;
 const produitsData = <?= json_encode($produits) ?>;
@@ -1094,7 +1095,7 @@ const produitsData = <?= json_encode($produits) ?>;
             phNom.textContent = produit.nom;
             phMarque.textContent = produit.marque || '';
             if (produit.image) {
-                phImg.src = URL_ROOT + '/' + produit.image;
+                phImg.src = UPLOAD_URL + produit.image;
                 phImg.style.display = 'block';
                 phImgPlaceholder.style.display = 'none';
             } else {
@@ -1107,7 +1108,105 @@ const produitsData = <?= json_encode($produits) ?>;
         renderTailles(produitId);
     });
 
-    // ── Ajouter une nouvelle taille ────────────────────────
+    // ── Ajouter une nouvelle taille en LIVE (sans re-render) ──
+    function ajouterTailleLive(produitId, taille, stock, newId) {
+        // 1. Mettre à jour taillesData en mémoire
+        if (!taillesData[produitId]) taillesData[produitId] = [];
+        taillesData[produitId].push({ id: newId, produit_id: produitId, taille: taille, stock: stock });
+
+        // 2. Supprimer le message "aucune taille" si présent
+        var emptyMsg = taillesContainer.querySelector('.empty-tailles');
+        if (emptyMsg) emptyMsg.remove();
+
+        // 3. Créer la grille si elle n'existe pas
+        var grid = taillesContainer.querySelector('.tailles-grid');
+        if (!grid) {
+            grid = document.createElement('div');
+            grid.className = 'tailles-grid';
+            taillesContainer.appendChild(grid);
+        }
+
+        // 4. Calculer le max stock pour les barres
+        var allStocks = taillesData[produitId].map(function(t) { return parseInt(t.stock) || 0; });
+        var maxStock = Math.max.apply(null, allStocks) || 1;
+        var pct = Math.min(100, Math.round((stock / maxStock) * 100));
+        var cls = 'ok';
+        var label = 'En stock';
+        if (stock <= 0) { cls = 'rupture'; label = 'Rupture'; }
+        else if (stock <= STOCK_SEUIL_ALERTE) { cls = 'faible'; label = 'Stock faible'; }
+
+        // 5. Créer la carte HTML
+        var card = document.createElement('div');
+        card.className = 'taille-card';
+        card.dataset.tailleId = newId;
+        card.dataset.produitId = produitId;
+        card.innerHTML =
+            '<div class="tc-head">' +
+                '<span class="tc-taille">Taille ' + taille + '</span>' +
+                '<span class="tc-badge ' + cls + '">' + label + '</span>' +
+            '</div>' +
+            '<div class="tc-bar">' +
+                '<div class="tc-bar-fill ' + cls + '" style="width:' + pct + '%"></div>' +
+            '</div>' +
+            '<div class="tc-stock">' +
+                '<span>Stock</span>' +
+                '<span class="tc-stock-nb ' + cls + '">' + stock + '</span>' +
+            '</div>' +
+            '<div class="tc-actions">' +
+                '<input type="number" class="qte-input" min="1" value="1" placeholder="Qte">' +
+                '<button class="btn-add" data-taille-id="' + newId + '" data-produit-id="' + produitId + '">' +
+                    '➕ Ajouter' +
+                '</button>' +
+            '</div>';
+
+        // 6. Animation d'entrée
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        grid.appendChild(card);
+        requestAnimationFrame(function() {
+            card.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        });
+
+        // 7. Attacher événements sur la nouvelle carte
+        card.querySelector('.btn-add').addEventListener('click', function() {
+            var tId = this.dataset.tailleId;
+            var pId = this.dataset.produitId;
+            var c = this.closest('.taille-card');
+            var qInput = c.querySelector('.qte-input');
+            var qte = parseInt(qInput.value) || 0;
+            if (qte <= 0) { showToast('Veuillez saisir une quantité valide', 'error'); return; }
+            ajouterStock(tId, pId, qte, c, qInput);
+        });
+        card.querySelector('.qte-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                var c = this.closest('.taille-card');
+                var b = c.querySelector('.btn-add');
+                if (b) b.click();
+            }
+        });
+
+        // 8. Mettre à jour les barres de toutes les tailles
+        var maxS = Math.max.apply(null, taillesData[produitId].map(function(t) { return parseInt(t.stock) || 0; })) || 1;
+        grid.querySelectorAll('.tc-bar-fill').forEach(function(fill) {
+            var cardEl = fill.closest('.taille-card');
+            var tId = cardEl.dataset.tailleId;
+            var t = taillesData[produitId].find(function(t) { return String(t.id) === tId; });
+            if (t) {
+                var s = parseInt(t.stock) || 0;
+                fill.style.width = Math.min(100, Math.round((s / maxS) * 100)) + '%';
+            }
+        });
+
+        // 9. Mettre à jour le compteur de tailles
+        phNbTailles.textContent = taillesData[produitId].length;
+
+        // 10. Toast de confirmation
+        showToast('✅ Taille "' + taille + '" ajoutée avec ' + stock + ' en stock', 'success');
+    }
+
+    // ── Ajouter une nouvelle taille (bouton) ────────────────
     btnAddTaille.addEventListener('click', function() {
         var produitId = produitSelect.value;
         var taille = newTailleInput.value.trim();
@@ -1133,10 +1232,10 @@ const produitsData = <?= json_encode($produits) ?>;
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.success) {
-                showToast('✅ Taille "' + taille + '" ajoutée avec ' + stock + ' en stock', 'success');
                 newTailleInput.value = '';
                 newStockInput.value = '0';
-                renderTailles(produitId);
+                // Ajout LIVE sans re-render
+                ajouterTailleLive(produitId, taille, stock, data.id);
             } else {
                 showToast('Erreur : ' + (data.error || 'Inconnue'), 'error');
             }
