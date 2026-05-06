@@ -9,64 +9,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Commande #<?= $commande['id'] ?> — Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; }
-        .sidebar {
-            position: fixed; top: 0; left: 0;
-            width: 240px; height: 100vh;
-            background: #0a0a0a; color: #f5f0eb;
-            display: flex; flex-direction: column; z-index: 100;
-        }
-        .sidebar .brand { padding: 25px 20px; font-size: 1.2rem; font-weight: 700; color: #c9a84c; letter-spacing: 2px; border-bottom: 1px solid #1a1a1a; }
-        .sidebar .admin-info { padding: 15px 20px; font-size: 0.8rem; color: #666; border-bottom: 1px solid #1a1a1a; }
-        .sidebar nav { flex: 1; padding: 20px 0; }
-        .sidebar nav a { display: flex; align-items: center; gap: 10px; padding: 12px 20px; color: #888; text-decoration: none; font-size: 0.9rem; transition: all 0.2s; }
-        .sidebar nav a:hover, .sidebar nav a.active { background: #141414; color: #c9a84c; border-left: 3px solid #c9a84c; }
-        .sidebar .logout { padding: 20px; border-top: 1px solid #1a1a1a; }
-        .sidebar .logout a { color: #666; text-decoration: none; font-size: 0.85rem; }
-        .sidebar .logout a:hover { color: #ff6b6b; }
-        .main { margin-left: 240px; padding: 30px; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .page-header h1 { font-size: 1.8rem; }
-        .btn-back { color: #888; text-decoration: none; font-size: 0.9rem; }
-        .btn-back:hover { color: #c9a84c; }
-
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-        .card { background: #fff; border-radius: 10px; padding: 25px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-        .card h2 { font-size: 1rem; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #eee; color: #444; }
-        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 0.9rem; }
-        .info-row:last-child { border-bottom: none; }
-        .info-row .label { color: #888; }
-        .info-row .value { font-weight: 600; color: #1a1a1a; }
-
-        .badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
-        .badge-nouveau { background: #fff3e0; color: #e65100; }
-        .badge-vu { background: #e3f2fd; color: #1565c0; }
-        .badge-confirme { background: #e8f5e9; color: #2e7d32; }
-        .badge-annule { background: #ffebee; color: #c62828; }
-
-        .statut-form { display: flex; gap: 10px; align-items: center; margin-top: 15px; }
-        .statut-form select { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; outline: none; }
-        .statut-form select:focus { border-color: #c9a84c; }
-        .btn-update { padding: 10px 20px; background: #c9a84c; color: #0a0a0a; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .btn-update:hover { background: #e0bb6a; }
-
-        .btn-whatsapp { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #25D366; color: #fff; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; }
-        .btn-whatsapp:hover { background: #1ebe5d; }
-
-        .flash { max-width: 1200px; margin: 0 auto 20px; }
-        .flash-message { padding: 12px 18px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem; }
-        .flash-success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; }
-
-        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/admin.css">
 </head>
 <body>
 
 <aside class="sidebar">
     <div class="brand"><?= htmlspecialchars(SITE_NAME) ?></div>
+    <button class="hamburger" aria-label="Menu">☰</button>
     <div class="admin-info">👤 <?= htmlspecialchars($adminNom) ?></div>
     <nav>
         <a href="<?= URL_ROOT ?>/admin"><span>📊</span> Dashboard</a>
@@ -188,5 +138,6 @@
     </div>
 </main>
 
+<script src="<?= URL_ROOT ?>/assets/js/admin.js"></script>
 </body>
 </html>

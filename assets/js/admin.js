@@ -217,6 +217,34 @@
         // Sera implémenté si nécessaire
     }
 
+    // ── Preview Images (produits/form) ─────────────────────
+    window.previewImages = function(input) {
+        var container = document.getElementById('newPreviews');
+        if (!container) return;
+        container.innerHTML = '';
+        Array.from(input.files).forEach(function(file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var div = document.createElement('div');
+                div.className = 'preview-img';
+                div.innerHTML = '<img src="' + e.target.result + '" style="width:80px;height:80px;object-fit:cover;border-radius:6px;">';
+                container.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    // ── Hamburger Menu (Mobile) ────────────────────────────
+    var hamburger = document.querySelector('.sidebar .hamburger');
+    if (hamburger) {
+        hamburger.addEventListener('click', function() {
+            var nav = document.querySelector('.sidebar nav');
+            var logout = document.querySelector('.sidebar .logout');
+            if (nav) nav.classList.toggle('open');
+            if (logout) logout.classList.toggle('open');
+        });
+    }
+
     // ── Export CSV ─────────────────────────────────────────
     var exportBtn = document.getElementById('exportCsv');
     if (exportBtn) {

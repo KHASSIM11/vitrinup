@@ -23,6 +23,7 @@
 
 <aside class="sidebar">
     <div class="brand">Vitrin<span>up</span></div>
+    <button class="hamburger" aria-label="Menu">☰</button>
     <div class="admin-info">
         <span class="avatar"><?= strtoupper(substr($adminNom ?? 'A', 0, 1)) ?></span>
         <?= htmlspecialchars($adminNom ?? '') ?>
