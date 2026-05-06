@@ -275,37 +275,31 @@ class AdminStocksController extends Controller {
         $quantiteCommande = max(1, intval($commande['quantite'] ?? 1));
 
         if ($action === 'confirmer') {
-            if ($taille) {
-                $stockAvant = intval($taille['stock']);
-                $stockApres = max(0, $stockAvant - $quantiteCommande);
-
-                $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
-                         ->bind(':stock', $stockApres)
-                         ->bind(':id', $taille['id'])
-                         ->execute();
-
-                $this->db->query(
-                    "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
-                     VALUES (:produit_id, :taille_id, :taille, 'commande', :quantite, :stock_avant, :stock_apres, :reference)"
-                )
-                ->bind(':produit_id', $commande['produit_id'])
-                ->bind(':taille_id', $taille['id'])
-                ->bind(':taille', $commande['taille'])
-                ->bind(':quantite', $quantiteCommande)
-                ->bind(':stock_avant', $stockAvant)
-                ->bind(':stock_apres', $stockApres)
-                ->bind(':reference', 'Commande #' . $commandeId . ' - ' . $commande['client_nom'])
-                ->execute();
-            }
-
+            // ⚠️ Le stock a déjà été déduit lors de la commande client (dans PanierController::traiterCommande)
+            // On ne fait que changer le statut — PAS de nouvelle déduction
             $this->db->query("UPDATE commandes SET statut = 'confirme' WHERE id = :id")
                      ->bind(':id', $commandeId)
                      ->execute();
 
-            $_SESSION['flash_success'] = '✅ Commande #' . $commandeId . ' confirmée. Stock déduit (' . $quantiteCommande . ' unité' . ($quantiteCommande > 1 ? 's' : '') . ').';
+            // Mettre à jour la référence du mouvement existant pour tracer la confirmation
+            $this->db->query(
+                "UPDATE mouvements_stock SET reference = CONCAT(reference, ' — Confirmé #', :cid)
+                 WHERE produit_id = :pid AND taille_id = :tid AND type = 'commande'
+                 AND created_at = (SELECT MAX(created_at) FROM mouvements_stock ms WHERE ms.produit_id = :pid2 AND ms.taille_id = :tid2 AND ms.type = 'commande')"
+            )
+            ->bind(':cid', $commandeId)
+            ->bind(':pid', $commande['produit_id'])
+            ->bind(':tid', $taille['id'] ?? 0)
+            ->bind(':pid2', $commande['produit_id'])
+            ->bind(':tid2', $taille['id'] ?? 0)
+            ->execute();
+
+            $_SESSION['flash_success'] = '✅ Commande #' . $commandeId . ' confirmée. Stock déjà déduit à la commande.';
 
         } elseif ($action === 'annuler') {
-            if ($commande['statut'] === 'confirme' && $taille) {
+            // Si la commande était confirmée OU si elle était en attente (nouveau/vu) :
+            // Dans les deux cas, le stock a été déduit lors de la commande client → on doit le remettre
+            if ($taille) {
                 $stockAvant = intval($taille['stock']);
                 $stockApres = $stockAvant + $quantiteCommande;
 
@@ -324,7 +318,7 @@ class AdminStocksController extends Controller {
                 ->bind(':quantite', $quantiteCommande)
                 ->bind(':stock_avant', $stockAvant)
                 ->bind(':stock_apres', $stockApres)
-                ->bind(':reference', 'Annulation commande #' . $commandeId)
+                ->bind(':reference', 'Annulation commande #' . $commandeId . ' - ' . $commande['client_nom'])
                 ->execute();
             }
 
@@ -332,7 +326,7 @@ class AdminStocksController extends Controller {
                      ->bind(':id', $commandeId)
                      ->execute();
 
-            $_SESSION['flash_success'] = '↩ Commande #' . $commandeId . ' annulée.';
+            $_SESSION['flash_success'] = '↩ Commande #' . $commandeId . ' annulée. Stock remis (+' . $quantiteCommande . ').';
         }
 
         header('Location: ' . URL_ROOT . '/admin/stocks/sortie');

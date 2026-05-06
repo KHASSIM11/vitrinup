@@ -139,7 +139,7 @@
                                         <form method="POST" action="<?= URL_ROOT ?>/admin/stocks/ajouterSortie" style="display:inline">
                                             <input type="hidden" name="commande_id" value="<?= intval($c['id']) ?>">
                                             <input type="hidden" name="action" value="confirmer">
-                                            <button type="submit" class="btn-action btn-confirmer" data-confirm="Confirmer cette commande ? <?= $quantiteCmd ?> unité<?= $quantiteCmd > 1 ? 's' : '' ?> sera déduite du stock.">✅ Confirmer</button>
+                                            <button type="submit" class="btn-action btn-confirmer" data-confirm="Confirmer cette commande ? Le stock a déjà été déduit à la commande.">✅ Confirmer</button>
                                         </form>
                                         <form method="POST" action="<?= URL_ROOT ?>/admin/stocks/ajouterSortie" style="display:inline;margin-left:4px;">
                                             <input type="hidden" name="commande_id" value="<?= intval($c['id']) ?>">
