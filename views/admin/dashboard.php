@@ -9,79 +9,63 @@
 /** @var array $ruptureStock Produits en rupture */
 /** @var int $nbStockFaible Nombre de produits en stock faible */
 /** @var int $nbRupture Nombre de produits en rupture */
+$pageTitle  = 'Dashboard';
+$activePage = 'dashboard';
+require_once __DIR__ . '/layout/header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard — Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/admin.css">
-</head>
-<body>
-
-<!-- SIDEBAR -->
-<aside class="sidebar">
-    <div class="brand"><?= htmlspecialchars(SITE_NAME) ?></div>
-    <button class="hamburger" aria-label="Menu">☰</button>
-    <div class="admin-info">👤 <?= htmlspecialchars($adminNom) ?></div>
-    <nav>
-        <a href="<?= URL_ROOT ?>/admin" class="active"><span class="icon">📊</span> Dashboard</a>
-        <a href="<?= URL_ROOT ?>/admin/produits"><span class="icon">👟</span> Produits</a>
-        <a href="<?= URL_ROOT ?>/admin/categories"><span class="icon">🗂️</span> Catégories</a>
-        <a href="<?= URL_ROOT ?>/admin/commandes"><span class="icon">📦</span> Commandes</a>
-        <a href="<?= URL_ROOT ?>/admin/stocks"><span class="icon">📋</span> Stocks</a>
-        <a href="<?= URL_ROOT ?>" target="_blank"><span class="icon">🌐</span> Voir le site</a>
-    </nav>
-    <div class="logout">
-        <a href="<?= URL_ROOT ?>/admin/logout">🚪 Déconnexion</a>
+<div class="page-header">
+    <div>
+        <h1>📊 Dashboard</h1>
+        <div class="subtitle">Bienvenue, <?= htmlspecialchars($adminNom) ?> 👋</div>
     </div>
-</aside>
+</div>
 
-<!-- MAIN -->
-<main class="main">
-    <div class="page-header">
-        <h1>Dashboard</h1>
-        <p>Bienvenue, <?= htmlspecialchars($adminNom) ?> 👋</p>
+<!-- STATS PRODUITS & COMMANDES -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="label">Produits actifs</div>
+        <div class="value gold"><?= $totalActifs ?></div>
     </div>
-
-    <!-- STATS -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="label">Produits actifs</div>
-            <div class="value gold"><?= $totalActifs ?></div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Produits inactifs</div>
-            <div class="value"><?= $totalInactifs ?></div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Total commandes</div>
-            <div class="value green"><?= $totalCommandes ?></div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Nouvelles commandes</div>
-            <div class="value red"><?= $nouvellesCommandes ?></div>
-        </div>
+    <div class="stat-card">
+        <div class="stat-icon">❌</div>
+        <div class="label">Produits inactifs</div>
+        <div class="value"><?= $totalInactifs ?></div>
     </div>
-
-    <!-- STATS STOCKS -->
-    <div class="stats-grid" style="margin-top:10px;">
-        <div class="stat-card">
-            <div class="label">⚠️ Stock faible (≤<?= STOCK_SEUIL_ALERTE ?>)</div>
-            <div class="value" style="color:#ff9800"><?= $nbStockFaible ?></div>
-        </div>
-        <div class="stat-card">
-            <div class="label">🚫 En rupture</div>
-            <div class="value red"><?= $nbRupture ?></div>
-        </div>
+    <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="label">Total commandes</div>
+        <div class="value green"><?= $totalCommandes ?></div>
     </div>
+    <div class="stat-card">
+        <div class="stat-icon">🆕</div>
+        <div class="label">Nouvelles commandes</div>
+        <div class="value red"><?= $nouvellesCommandes ?></div>
+    </div>
+</div>
 
-    <!-- ALERTES STOCK FAIBLE -->
-    <?php if (!empty($stockFaible)): ?>
-    <div class="section" style="margin-top:25px;">
-        <h2>⚠️ Alertes stock faible (≤ <?= STOCK_SEUIL_ALERTE ?> unités)</h2>
+<!-- STATS STOCKS -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="label">Stock faible (≤<?= STOCK_SEUIL_ALERTE ?>)</div>
+        <div class="value orange"><?= $nbStockFaible ?></div>
+        <div class="stat-change down">⚡ À réapprovisionner</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🚫</div>
+        <div class="label">En rupture</div>
+        <div class="value red"><?= $nbRupture ?></div>
+        <div class="stat-change down">⛔ Action urgente</div>
+    </div>
+</div>
+
+<!-- ALERTES STOCK FAIBLE -->
+<?php if (!empty($stockFaible)): ?>
+<div class="card">
+    <h2>⚠️ Alertes stock faible (≤ <?= STOCK_SEUIL_ALERTE ?> unités)</h2>
+    <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
@@ -96,26 +80,28 @@
                         <td>
                             <strong><?= htmlspecialchars($p['nom']) ?></strong>
                             <?php if ($p['marque']): ?>
-                                <br><small style="color:#888"><?= htmlspecialchars($p['marque']) ?></small>
+                                <br><small class="text-muted"><?= htmlspecialchars($p['marque']) ?></small>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <span style="color:#e65100;font-weight:700;"><?= intval($p['stock_total']) ?> unité(s)</span>
+                            <span class="text-warning-bold"><?= intval($p['stock_total']) ?> unité(s)</span>
                         </td>
                         <td>
-                            <a href="<?= URL_ROOT ?>/admin/stocks?search=<?= urlencode($p['nom']) ?>" style="color:#1565c0;">Gérer le stock</a>
+                            <a href="<?= URL_ROOT ?>/admin/stocks?search=<?= urlencode($p['nom']) ?>" class="text-info">Gérer le stock</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </div>
-    <?php endif; ?>
+</div>
+<?php endif; ?>
 
-    <!-- PRODUITS EN RUPTURE -->
-    <?php if (!empty($ruptureStock)): ?>
-    <div class="section" style="margin-top:25px;">
-        <h2>🚫 Produits en rupture de stock</h2>
+<!-- PRODUITS EN RUPTURE -->
+<?php if (!empty($ruptureStock)): ?>
+<div class="card">
+    <h2>🚫 Produits en rupture de stock</h2>
+    <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
@@ -129,25 +115,27 @@
                         <td>
                             <strong><?= htmlspecialchars($p['nom']) ?></strong>
                             <?php if ($p['marque']): ?>
-                                <br><small style="color:#888"><?= htmlspecialchars($p['marque']) ?></small>
+                                <br><small class="text-muted"><?= htmlspecialchars($p['marque']) ?></small>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <a href="<?= URL_ROOT ?>/admin/stocks?search=<?= urlencode($p['nom']) ?>" style="color:#1565c0;">Ajouter du stock</a>
+                            <a href="<?= URL_ROOT ?>/admin/stocks?search=<?= urlencode($p['nom']) ?>" class="text-info">Ajouter du stock</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </div>
-    <?php endif; ?>
+</div>
+<?php endif; ?>
 
-    <!-- DERNIÈRES COMMANDES -->
-    <div class="section" style="margin-top:25px;">
-        <h2>📦 Dernières commandes</h2>
-        <?php if (empty($dernieresCmds)): ?>
-            <p class="empty-msg">Aucune commande pour l'instant.</p>
-        <?php else: ?>
+<!-- DERNIÈRES COMMANDES -->
+<div class="card">
+    <h2>📦 Dernières commandes</h2>
+    <?php if (empty($dernieresCmds)): ?>
+        <p class="empty-msg">Aucune commande pour l'instant.</p>
+    <?php else: ?>
+        <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
@@ -176,9 +164,8 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php endif; ?>
-    </div>
-</main>
+        </div>
+    <?php endif; ?>
+</div>
 
-<script src="<?= URL_ROOT ?>/assets/js/admin.js"></script>
-</body>
+<?php require_once __DIR__ . '/layout/footer.php'; ?>

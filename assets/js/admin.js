@@ -227,7 +227,7 @@
             reader.onload = function(e) {
                 var div = document.createElement('div');
                 div.className = 'preview-img';
-                div.innerHTML = '<img src="' + e.target.result + '" style="width:80px;height:80px;object-fit:cover;border-radius:6px;">';
+                div.innerHTML = '<img src="' + e.target.result + '" class="preview-thumb" alt="">';
                 container.appendChild(div);
             };
             reader.readAsDataURL(file);

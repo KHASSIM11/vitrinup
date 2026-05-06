@@ -1443,6 +1443,232 @@ mark { background: rgba(201, 168, 76, 0.2); padding: 0 2px; border-radius: 2px; 
     animation: spin 0.6s linear infinite;
 }
 
+/* ── Hamburger (masqué sur desktop) ─────────────────────── */
+.hamburger { display: none; }
+
+/* ── Utility ────────────────────────────────────────────── */
+.text-muted { color: var(--text-muted); }
+.text-warning { color: var(--orange-text); }
+.text-warning-bold { color: var(--orange-text); font-weight: 700; }
+.text-info { color: var(--blue-text); }
+.text-success { color: var(--green-text); }
+.text-danger { color: var(--red-text); }
+.section-divider { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+.badge-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ── Section (conteneur générique comme .card) ──────────── */
+.section {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+}
+
+/* ── Error message (global) ─────────────────────────────── */
+.error {
+    background: var(--red-bg);
+    border: 1px solid #ef9a9a;
+    color: var(--red-text);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    font-size: 0.88rem;
+}
+
+/* ── Boutons d'action manquants ─────────────────────────── */
+.btn-edit { background: var(--blue-bg); color: var(--blue-text); }
+.btn-edit:hover { background: #bbdefb; transform: translateY(-1px); }
+.btn-delete { background: var(--red-bg); color: var(--red-text); }
+.btn-delete:hover { background: #ffcdd2; transform: translateY(-1px); }
+.btn-view { background: var(--purple-bg); color: var(--purple-text); }
+.btn-view:hover { background: #e1bee7; transform: translateY(-1px); }
+
+.btn-add, .btn-update {
+    padding: 10px 24px;
+    background: var(--gold); color: var(--dark);
+    border: none; border-radius: var(--radius-sm);
+    font-size: 0.88rem; font-weight: 700; cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none;
+}
+.btn-add:hover, .btn-update:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201, 168, 76, 0.3);
+}
+
+.btn-whatsapp {
+    padding: 12px 24px;
+    background: #25D366; color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+}
+.btn-whatsapp:hover {
+    background: #128C7E;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+/* ── Grilles de mise en page ────────────────────────────── */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+.prix-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* ── Zone upload ────────────────────────────────────────── */
+.upload-zone {
+    border: 2px dashed #ddd;
+    border-radius: var(--radius);
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    background: #fafafa;
+}
+.upload-zone:hover { border-color: var(--gold); background: rgba(201, 168, 76, 0.04); }
+.upload-zone input[type="file"] { display: none; }
+.upload-zone .icon { font-size: 2rem; margin-bottom: 10px; color: #aaa; }
+.upload-zone p { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ── Grille aperçu images ───────────────────────────────── */
+.preview-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.preview-img { position: relative; display: inline-block; }
+.preview-img img, .preview-thumb {
+    width: 80px; height: 80px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid #eee;
+    display: block;
+}
+.preview-img .del-img {
+    position: absolute; top: -6px; right: -6px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--red-text); color: #fff;
+    border: none; cursor: pointer;
+    font-size: 0.8rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); padding: 0;
+}
+.preview-img .del-img:hover { background: #b71c1c; }
+
+/* ── Info Row (détail commande) ─────────────────────────── */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+    gap: 12px;
+    font-size: 0.9rem;
+}
+.info-row:last-of-type { border-bottom: none; }
+.info-row .label, .info-row .info-label {
+    font-size: 0.75rem; font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    min-width: 110px; flex-shrink: 0;
+}
+.info-row .value, .info-row .info-value {
+    color: var(--text); font-weight: 500;
+    text-align: right; flex: 1;
+}
+.info-row .value a { color: var(--blue-text); text-decoration: none; }
+.info-row .value a:hover { text-decoration: underline; }
+
+/* ── Formulaire changement de statut commande ───────────── */
+.statut-form {
+    display: flex; gap: 10px; align-items: center;
+    flex-wrap: wrap;
+    margin-top: 20px; padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+.statut-form select {
+    padding: 10px 16px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem; outline: none;
+    background: var(--white); color: var(--text);
+    transition: var(--transition); flex: 1; min-width: 160px;
+    font-family: inherit;
+}
+.statut-form select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+}
+
+/* ── Filtres statut (onglets) ───────────────────────────── */
+.filtres-statut { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+
+/* ── Badge compteur (dans filtres) ─────────────────────── */
+.count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 20px; height: 20px; padding: 0 6px;
+    background: rgba(0,0,0,0.12); border-radius: 10px;
+    font-size: 0.68rem; font-weight: 700; margin-left: 4px;
+}
+.btn-filtre.actif .count { background: rgba(0,0,0,0.2); }
+
+/* ── Info client (tableau commandes) ────────────────────── */
+.client-info { line-height: 1.4; }
+.client-info strong { display: block; font-size: 0.88rem; }
+.client-info small { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ── Badge produits (catégories) ────────────────────────── */
+.badge-produits {
+    display: inline-block; padding: 3px 10px;
+    border-radius: 50px; font-size: 0.72rem; font-weight: 600;
+    background: var(--blue-bg); color: var(--blue-text);
+}
+
+/* ── Help text (unifié) ─────────────────────────────────── */
+.help, .help-text {
+    font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;
+}
+
+/* ── Prix barré (liste produits) ────────────────────────── */
+.price-promo { font-weight: 700; color: var(--red-text); }
+.price-original { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ── Bouton pleine largeur ──────────────────────────────── */
+.btn-full { width: 100%; justify-content: center; }
+
+/* ── Titre secondaire dans .section-divider ─────────────── */
+.section-divider h3 {
+    font-size: 0.85rem; color: var(--text-muted);
+    margin-bottom: 8px; font-weight: 600;
+}
+.section-divider p { font-size: 0.9rem; line-height: 1.6; }
+
+/* ── Formulaires inline (boutons côte-à-côte) ───────────── */
+form.inline { display: inline; }
+
+/* ── Toggle statut produit ──────────────────────────────── */
+.toggle-statut { display: flex; gap: 20px; font-size: 0.9rem; flex-wrap: wrap; }
+.toggle-statut label {
+    display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500;
+}
+
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE MOBILE — TOUTES LES VUES ADMIN
    ═══════════════════════════════════════════════════════════ */

@@ -3,56 +3,30 @@
  * @var array  $categories Liste des catégories
  * @var string $adminNom   Nom de l'admin connecté
  */
+$pageTitle  = 'Catégories';
+$activePage = 'categories';
+require_once __DIR__ . '/../layout/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Catégories — Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/admin.css">
-</head>
-<body>
 
-<aside class="sidebar">
-    <div class="brand"><?= htmlspecialchars(SITE_NAME) ?></div>
-    <button class="hamburger" aria-label="Menu">☰</button>
-    <div class="admin-info">👤 <?= htmlspecialchars($adminNom) ?></div>
-    <nav>
-        <a href="<?= URL_ROOT ?>/admin"><span>📊</span> Dashboard</a>
-        <a href="<?= URL_ROOT ?>/admin/produits"><span>👟</span> Produits</a>
-        <a href="<?= URL_ROOT ?>/admin/categories" class="active"><span>🗂️</span> Catégories</a>
-        <a href="<?= URL_ROOT ?>/admin/commandes"><span>📦</span> Commandes</a>
-        <a href="<?= URL_ROOT ?>/admin/stocks"><span>📋</span> Stocks</a>
-        <a href="<?= URL_ROOT ?>" target="_blank"><span>🌐</span> Voir le site</a>
-    </nav>
-    <div class="logout"><a href="<?= URL_ROOT ?>/admin/logout">🚪 Déconnexion</a></div>
-</aside>
+<div class="page-header">
+    <h1>🗂️ Catégories</h1>
+    <a href="<?= URL_ROOT ?>/admin/categories/ajouter" class="btn-add">+ Ajouter une catégorie</a>
+</div>
 
-<main class="main">
-    <div class="page-header">
-        <h1>🗂️ Catégories</h1>
-        <a href="<?= URL_ROOT ?>/admin/categories/ajouter" class="btn-add">+ Ajouter une catégorie</a>
-    </div>
+<?php if (!empty($_SESSION['flash_success'])): ?>
+    <div class="flash-message flash-success">✅ <?= htmlspecialchars($_SESSION['flash_success']) ?></div>
+    <?php unset($_SESSION['flash_success']); ?>
+<?php endif; ?>
+<?php if (!empty($_SESSION['flash_error'])): ?>
+    <div class="flash-message flash-error">❌ <?= htmlspecialchars($_SESSION['flash_error']) ?></div>
+    <?php unset($_SESSION['flash_error']); ?>
+<?php endif; ?>
 
-    <!-- Flash messages -->
-    <?php if (!empty($_SESSION['flash_success'])): ?>
-        <div class="flash">
-            <div class="flash-message flash-success"><?= htmlspecialchars($_SESSION['flash_success']) ?></div>
-        </div>
-        <?php unset($_SESSION['flash_success']); ?>
-    <?php endif; ?>
-    <?php if (!empty($_SESSION['flash_error'])): ?>
-        <div class="flash">
-            <div class="flash-message flash-error"><?= htmlspecialchars($_SESSION['flash_error']) ?></div>
-        </div>
-        <?php unset($_SESSION['flash_error']); ?>
-    <?php endif; ?>
-
-    <div class="section">
-        <?php if (empty($categories)): ?>
-            <p class="empty-msg">Aucune catégorie. <a href="<?= URL_ROOT ?>/admin/categories/ajouter">Ajouter la première</a></p>
-        <?php else: ?>
+<div class="card">
+    <?php if (empty($categories)): ?>
+        <p class="empty-msg">Aucune catégorie. <a href="<?= URL_ROOT ?>/admin/categories/ajouter">Ajouter la première</a></p>
+    <?php else: ?>
+        <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
@@ -69,7 +43,7 @@
                             <td><?= $cat['ordre'] ?></td>
                             <td><strong><?= htmlspecialchars($cat['nom']) ?></strong></td>
                             <td><code><?= htmlspecialchars($cat['slug']) ?></code></td>
-                            <td><span class="badge badge-produits"><?= $cat['nb_produits'] ?> produit(s)</span></td>
+                            <td><span class="badge-produits"><?= $cat['nb_produits'] ?> produit(s)</span></td>
                             <td>
                                 <a href="<?= URL_ROOT ?>/admin/categories/modifier/<?= $cat['id'] ?>" class="btn-action btn-edit">✏️ Modifier</a>
                                 <a href="<?= URL_ROOT ?>/admin/categories/supprimer/<?= $cat['id'] ?>"
@@ -80,10 +54,8 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php endif; ?>
-    </div>
-</main>
+        </div>
+    <?php endif; ?>
+</div>
 
-<script src="<?= URL_ROOT ?>/assets/js/admin.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/../layout/footer.php'; ?>

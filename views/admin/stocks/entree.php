@@ -5,150 +5,118 @@
  * @var array  $dernieresEntrees  Dernières entrées enregistrées
  * @var string $adminNom          Nom de l'admin connecté
  */
+$pageTitle  = 'Entrée de stock';
+$activePage = 'stocks';
+require_once __DIR__ . '/../layout/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Entrée de stock — Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/admin.css">
-</head>
-<body>
 
-<aside class="sidebar">
-    <div class="brand">Vitrin<span>up</span></div>
-    <button class="hamburger" aria-label="Menu">☰</button>
-    <div class="admin-info">
-        <span class="avatar"><?= strtoupper(substr($adminNom ?? 'A', 0, 1)) ?></span>
-        <?= htmlspecialchars($adminNom ?? '') ?>
+<div class="page-header">
+    <div>
+        <h1>📥 Entrée de stock</h1>
+        <div class="subtitle">Gérez les tailles et ajoutez du stock en un clic — interface temps réel</div>
     </div>
-    <nav>
-        <div class="nav-label">Navigation</div>
-        <a href="<?= URL_ROOT ?>/admin"><span class="icon">📊</span> Dashboard</a>
-        <a href="<?= URL_ROOT ?>/admin/produits"><span class="icon">👟</span> Produits</a>
-        <a href="<?= URL_ROOT ?>/admin/categories"><span class="icon">🗂️</span> Catégories</a>
-        <a href="<?= URL_ROOT ?>/admin/commandes"><span class="icon">📦</span> Commandes</a>
-        <a href="<?= URL_ROOT ?>/admin/stocks" class="active"><span class="icon">📋</span> Stocks</a>
-        <a href="<?= URL_ROOT ?>" target="_blank"><span class="icon">🌐</span> Voir le site</a>
-    </nav>
-    <div class="logout"><a href="<?= URL_ROOT ?>/admin/logout"><span>🚪</span> <span>Déconnexion</span></a></div>
-</aside>
+    <a href="<?= URL_ROOT ?>/admin/stocks" class="btn-back">← Retour aux stocks</a>
+</div>
 
-<main class="main">
-    <div class="page-header">
-        <div>
-            <h1>📥 Entrée de stock</h1>
-            <div class="subtitle">Gérez les tailles et ajoutez du stock en un clic — interface temps réel</div>
+<?php if (!empty($_SESSION['flash_success'])): ?>
+    <div class="flash-message flash-success">✅ <?= htmlspecialchars($_SESSION['flash_success']) ?></div>
+    <?php unset($_SESSION['flash_success']); ?>
+<?php endif; ?>
+<?php if (!empty($_SESSION['flash_error'])): ?>
+    <div class="flash-message flash-error">❌ <?= htmlspecialchars($_SESSION['flash_error']) ?></div>
+    <?php unset($_SESSION['flash_error']); ?>
+<?php endif; ?>
+
+<div class="entree-layout">
+    <!-- COLONNE GAUCHE : Formulaire principal -->
+    <div class="card-entree">
+        <div class="card-title">
+            🎯 Ajouter du stock
+            <span class="title-badge">AJAX • Temps réel</span>
         </div>
-        <a href="<?= URL_ROOT ?>/admin/stocks" class="btn-back">← Retour aux stocks</a>
-    </div>
 
-    <?php if (!empty($_SESSION['flash_success'])): ?>
-        <div class="flash-message flash-success">✅ <?= htmlspecialchars($_SESSION['flash_success']) ?></div>
-        <?php unset($_SESSION['flash_success']); ?>
-    <?php endif; ?>
-    <?php if (!empty($_SESSION['flash_error'])): ?>
-        <div class="flash-message flash-error">❌ <?= htmlspecialchars($_SESSION['flash_error']) ?></div>
-        <?php unset($_SESSION['flash_error']); ?>
-    <?php endif; ?>
+        <div class="product-selector">
+            <label>👟 Produit</label>
+            <select id="produitSelect">
+                <option value="">— Sélectionnez un produit —</option>
+                <?php foreach ($produits as $p): ?>
+                    <option value="<?= intval($p['id']) ?>" data-image="<?= htmlspecialchars($p['image'] ?? '') ?>">
+                        <?= htmlspecialchars($p['nom']) ?>
+                        <?= $p['marque'] ? ' (' . htmlspecialchars($p['marque']) . ')' : '' ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
 
-    <div class="entree-layout">
-        <!-- ═══ COLONNE GAUCHE : Formulaire principal ═══ -->
-        <div class="card-entree">
-            <div class="card-title">
-                🎯 Ajouter du stock
-                <span class="title-badge">AJAX • Temps réel</span>
+        <!-- Panneau produit -->
+        <div class="produit-panel" id="produitPanel">
+            <div class="produit-header">
+                <div class="ph-img-placeholder" id="phImgPlaceholder">👟</div>
+                <img class="ph-img" id="phImg" src="" alt="" style="display:none;">
+                <div class="ph-info">
+                    <div class="ph-nom" id="phNom">—</div>
+                    <div class="ph-marque" id="phMarque"></div>
+                </div>
+                <div class="ph-stats">
+                    <strong id="phNbTailles">0</strong>
+                    taille(s)
+                </div>
             </div>
 
-            <div class="product-selector">
-                <label>👟 Produit</label>
-                <select id="produitSelect">
-                    <option value="">— Sélectionnez un produit —</option>
-                    <?php foreach ($produits as $p): ?>
-                        <option value="<?= intval($p['id']) ?>" data-image="<?= htmlspecialchars($p['image'] ?? '') ?>">
-                            <?= htmlspecialchars($p['nom']) ?>
-                            <?= $p['marque'] ? ' (' . htmlspecialchars($p['marque']) . ')' : '' ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+            <div id="taillesContainer">
+                <div class="empty-tailles">
+                    <div class="empty-icon">👟</div>
+                    <p>Sélectionnez un produit</p>
+                    <div class="empty-sub">pour gérer ses tailles et son stock</div>
+                </div>
             </div>
 
-            <!-- Panneau produit -->
-            <div class="produit-panel" id="produitPanel">
-                <div class="produit-header">
-                    <div class="ph-img-placeholder" id="phImgPlaceholder">👟</div>
-                    <img class="ph-img" id="phImg" src="" alt="" style="display:none;">
-                    <div class="ph-info">
-                        <div class="ph-nom" id="phNom">—</div>
-                        <div class="ph-marque" id="phMarque"></div>
-                    </div>
-                    <div class="ph-stats">
-                        <strong id="phNbTailles">0</strong>
-                        taille(s)
-                    </div>
-                </div>
-
-                <div id="taillesContainer">
-                    <div class="empty-tailles">
-                        <div class="empty-icon">👟</div>
-                        <p>Sélectionnez un produit</p>
-                        <div class="empty-sub">pour gérer ses tailles et son stock</div>
-                    </div>
-                </div>
-
-                <!-- Ajout nouvelle taille -->
-                <div class="add-taille-wrap" id="addTailleWrap" style="display:none;">
-                    <div class="at-label">➕ Nouvelle taille</div>
-                    <div class="at-row">
-                        <input type="text" id="newTailleInput" placeholder="Taille (ex: 42)" maxlength="20">
-                        <input type="number" id="newStockInput" placeholder="Stock" min="0" value="0">
-                        <button class="btn-new-taille" id="btnAddTaille">➕ Ajouter</button>
-                    </div>
+            <!-- Ajout nouvelle taille -->
+            <div class="add-taille-wrap" id="addTailleWrap" style="display:none;">
+                <div class="at-label">➕ Nouvelle taille</div>
+                <div class="at-row">
+                    <input type="text" id="newTailleInput" placeholder="Taille (ex: 42)" maxlength="20">
+                    <input type="number" id="newStockInput" placeholder="Stock" min="0" value="0">
+                    <button class="btn-new-taille" id="btnAddTaille">➕ Ajouter</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- ═══ COLONNE DROITE : Feed dernières entrées ═══ -->
-        <div class="card-feed">
-            <div class="feed-title">
-                🔄 Dernières entrées
-                <span class="feed-counter" id="feedCounter"><?= count($dernieresEntrees) ?></span>
-            </div>
+    <!-- COLONNE DROITE : Feed dernières entrées -->
+    <div class="card-feed">
+        <div class="feed-title">
+            🔄 Dernières entrées
+            <span class="feed-counter" id="feedCounter"><?= count($dernieresEntrees) ?></span>
+        </div>
 
-            <?php if (!empty($dernieresEntrees)): ?>
-                <div class="feed-list" id="feedList">
-                    <?php foreach ($dernieresEntrees as $e): ?>
-                        <div class="feed-item">
-                            <div class="feed-qte">+<?= intval($e['quantite']) ?></div>
-                            <div class="feed-body">
-                                <div class="feed-produit"><?= htmlspecialchars($e['produit_nom']) ?></div>
-                                <div class="feed-taille">Taille <?= htmlspecialchars($e['taille']) ?></div>
-                                <?php if ($e['reference']): ?>
-                                    <div class="feed-ref"><?= htmlspecialchars($e['reference']) ?></div>
-                                <?php endif; ?>
-                            </div>
-                            <div class="feed-time"><?= date('d/m H:i', strtotime($e['created_at'])) ?></div>
+        <?php if (!empty($dernieresEntrees)): ?>
+            <div class="feed-list" id="feedList">
+                <?php foreach ($dernieresEntrees as $e): ?>
+                    <div class="feed-item">
+                        <div class="feed-qte">+<?= intval($e['quantite']) ?></div>
+                        <div class="feed-body">
+                            <div class="feed-produit"><?= htmlspecialchars($e['produit_nom']) ?></div>
+                            <div class="feed-taille">Taille <?= htmlspecialchars($e['taille']) ?></div>
+                            <?php if ($e['reference']): ?>
+                                <div class="feed-ref"><?= htmlspecialchars($e['reference']) ?></div>
+                            <?php endif; ?>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="feed-empty" id="feedEmpty">
-                    <div class="feed-empty-icon">📭</div>
-                    <p>Aucune entrée pour le moment</p>
-                </div>
-            <?php endif; ?>
-        </div>
+                        <div class="feed-time"><?= date('d/m H:i', strtotime($e['created_at'])) ?></div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="feed-empty" id="feedEmpty">
+                <div class="feed-empty-icon">📭</div>
+                <p>Aucune entrée pour le moment</p>
+            </div>
+        <?php endif; ?>
     </div>
-</main>
+</div>
 
 <script>
-const URL_ROOT = '<?= URL_ROOT ?>';
-const UPLOAD_URL = '<?= UPLOAD_URL ?>';
-const STOCK_SEUIL_ALERTE = <?= STOCK_SEUIL_ALERTE ?>;
 const taillesData = <?= json_encode($taillesParProduit) ?>;
 const produitsData = <?= json_encode($produits) ?>;
 </script>
-<script src="<?= URL_ROOT ?>/assets/js/admin.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/../layout/footer.php'; ?>
