@@ -1774,10 +1774,14 @@ form.inline { display: inline; }
         z-index: 200;
         flex-direction: column;
         overflow-y: auto;
+        pointer-events: none;
+        visibility: hidden;
     }
     .sidebar.open {
         transform: translateX(0);
         box-shadow: 6px 0 40px rgba(0,0,0,0.5);
+        pointer-events: auto;
+        visibility: visible;
     }
     .sidebar-close { display: flex; }
     .sidebar-close:hover { color: #fff; background: rgba(255,255,255,0.12); }

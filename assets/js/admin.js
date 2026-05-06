@@ -234,30 +234,7 @@
         });
     };
 
-    // ── Hamburger Menu (Mobile) — drawer slide-in ─────────
-    var hamburger    = document.querySelector('.mobile-topbar .hamburger');
-    var sidebar      = document.getElementById('sidebar');
-    var overlay      = document.getElementById('sidebarOverlay');
-    var closeBtn     = document.getElementById('sidebarClose');
-
-    function openSidebar() {
-        if (sidebar)  sidebar.classList.add('open');
-        if (overlay)  overlay.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-    function closeSidebar() {
-        if (sidebar)  sidebar.classList.remove('open');
-        if (overlay)  overlay.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-
-    if (hamburger) hamburger.addEventListener('click', openSidebar);
-    if (closeBtn)  closeBtn.addEventListener('click', closeSidebar);
-    if (overlay)   overlay.addEventListener('click', closeSidebar);
-
-    document.querySelectorAll('.sidebar nav a').forEach(function(link) {
-        link.addEventListener('click', closeSidebar);
-    });
+    // Hamburger : géré dans footer.php (script inline isolé)
 
     // ── Export CSV ─────────────────────────────────────────
     var exportBtn = document.getElementById('exportCsv');
