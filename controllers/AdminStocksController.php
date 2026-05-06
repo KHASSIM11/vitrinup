@@ -528,6 +528,64 @@ class AdminStocksController extends Controller {
         exit;
     }
 
+    // ── AJOUTER ENTRÉE (AJAX) ─────────────────────────────
+    public function ajouterEntreeAjax(): void {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Méthode non autorisée']);
+            exit;
+        }
+
+        $tailleId  = intval($_POST['taille_id'] ?? 0);
+        $produitId = intval($_POST['produit_id'] ?? 0);
+        $quantite  = intval($_POST['quantite'] ?? 0);
+
+        if ($tailleId <= 0 || $produitId <= 0 || $quantite <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Paramètres invalides']);
+            exit;
+        }
+
+        $taille = $this->db->query(
+            "SELECT tp.*, p.nom AS produit_nom FROM tailles_produits tp JOIN produits p ON tp.produit_id = p.id WHERE tp.id = :id AND tp.produit_id = :pid"
+        )->bind(':id', $tailleId)->bind(':pid', $produitId)->single();
+
+        if (!$taille) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Taille introuvable pour ce produit']);
+            exit;
+        }
+
+        $stockAvant = intval($taille['stock']);
+        $stockApres = $stockAvant + $quantite;
+
+        $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
+                 ->bind(':stock', $stockApres)
+                 ->bind(':id', $tailleId)
+                 ->execute();
+
+        $this->db->query(
+            "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
+             VALUES (:produit_id, :taille_id, :taille, 'entree', :quantite, :stock_avant, :stock_apres, :reference)"
+        )
+        ->bind(':produit_id', $produitId)
+        ->bind(':taille_id', $tailleId)
+        ->bind(':taille', $taille['taille'])
+        ->bind(':quantite', $quantite)
+        ->bind(':stock_avant', $stockAvant)
+        ->bind(':stock_apres', $stockApres)
+        ->bind(':reference', 'Entrée rapide')
+        ->execute();
+
+        echo json_encode([
+            'success'       => true,
+            'nouveau_stock' => $stockApres,
+            'stock_avant'   => $stockAvant,
+            'quantite'      => $quantite,
+        ]);
+        exit;
+    }
+
     // ── EXPORT CSV ─────────────────────────────────────────
     public function exportCsv(): void {
         $search  = trim($_GET['search'] ?? '');
