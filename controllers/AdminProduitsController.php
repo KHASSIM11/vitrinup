@@ -116,7 +116,6 @@ class AdminProduitsController extends Controller {
         }
 
         $images  = $this->db->query("SELECT * FROM images_produits WHERE produit_id = :id ORDER BY ordre ASC")->bind(':id', $id)->resultSet();
-        $tailles = $this->db->query("SELECT * FROM tailles_produits WHERE produit_id = :id ORDER BY taille ASC")->bind(':id', $id)->resultSet();
         $error   = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -149,10 +148,6 @@ class AdminProduitsController extends Controller {
                     $this->uploadImages($id);
                 }
 
-                // Tailles
-                $this->db->query("DELETE FROM tailles_produits WHERE produit_id = :id")->bind(':id', $id)->execute();
-                $this->saveTailles($id);
-
                 header('Location: ' . URL_ROOT . '/admin/produits');
                 exit;
             }
@@ -162,7 +157,6 @@ class AdminProduitsController extends Controller {
             'produit'    => $produit,
             'images'     => $images,
             'categories' => $categories,
-            'tailles'    => $tailles,
             'error'      => $error,
             'adminNom'   => $_SESSION['admin_nom'],
         ]);
@@ -270,4 +264,3 @@ class AdminProduitsController extends Controller {
         return strtolower($text) ?: 'n-a';
     }
 }
-?>

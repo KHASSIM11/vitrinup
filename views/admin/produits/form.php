@@ -60,17 +60,6 @@
             font-size: 0.7rem; cursor: pointer; display: flex;
             align-items: center; justify-content: center;
         }
-        /* Tailles */
-        .tailles-container { display: flex; flex-direction: column; gap: 8px; }
-        .taille-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; }
-        .taille-row input { margin: 0; }
-        .btn-del-taille { background: #ffebee; color: #c62828; border: none; border-radius: 4px; padding: 8px 10px; cursor: pointer; font-size: 0.85rem; }
-        .btn-add-taille {
-            background: #f0f0f0; color: #444; border: none;
-            border-radius: 6px; padding: 8px 16px; cursor: pointer;
-            font-size: 0.85rem; margin-top: 8px; width: 100%;
-        }
-        .btn-add-taille:hover { background: #e0e0e0; }
         /* Submit */
         .btn-submit {
             width: 100%; padding: 14px;
@@ -170,24 +159,6 @@
                     </div>
                     <div class="preview-grid" id="newPreviews"></div>
                 </div>
-
-                <!-- Tailles -->
-                <div class="card">
-                    <h2>📐 Tailles & Stock</h2>
-                    <div class="tailles-container" id="taillesContainer">
-                        <?php
-                        $taillesExistantes = !empty($tailles) ? $tailles : [];
-                        foreach ($taillesExistantes as $t):
-                        ?>
-                            <div class="taille-row">
-                                <input type="text" name="tailles[]" value="<?= htmlspecialchars($t['taille']) ?>" placeholder="Ex: 42">
-                                <input type="number" name="stocks[]" value="<?= $t['stock'] ?>" min="0" placeholder="Stock">
-                                <button type="button" class="btn-del-taille" onclick="this.parentElement.remove()">✕</button>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <button type="button" class="btn-add-taille" onclick="ajouterTaille()">+ Ajouter une taille</button>
-                </div>
             </div>
 
             <!-- COLONNE DROITE -->
@@ -259,19 +230,6 @@ function previewImages(input) {
         };
         reader.readAsDataURL(file);
     });
-}
-
-// Ajouter une ligne taille
-function ajouterTaille() {
-    const container = document.getElementById('taillesContainer');
-    const div = document.createElement('div');
-    div.className = 'taille-row';
-    div.innerHTML = `
-        <input type="text" name="tailles[]" placeholder="Ex: 42">
-        <input type="number" name="stocks[]" value="0" min="0" placeholder="Stock">
-        <button type="button" class="btn-del-taille" onclick="this.parentElement.remove()">✕</button>
-    `;
-    container.appendChild(div);
 }
 </script>
 
