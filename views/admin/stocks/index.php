@@ -190,7 +190,7 @@
                                             ?>
                                                 <span class="taille-badge <?= $cls ?>">
                                                     <span class="taille-label"><?= htmlspecialchars($t['taille']) ?></span>
-                                                    <span class="taille-qte"><?= $s ?></span>
+                                                    <span class="taille-qte"><?= $s ?><span class="unit">u</span></span>
                                                 </span>
                                             <?php endforeach; ?>
                                         </div>
