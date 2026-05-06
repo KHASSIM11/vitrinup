@@ -27,12 +27,27 @@ $_initial    = strtoupper(substr($_adminNom ?: 'A', 0, 1));
 </head>
 <body>
 
-<aside class="sidebar">
-    <div class="brand"><?= htmlspecialchars(SITE_NAME) ?></div>
-    <button class="hamburger" aria-label="Menu">☰</button>
+<!-- Barre supérieure mobile (hamburger + marque) -->
+<div class="mobile-topbar">
+    <button class="hamburger" aria-label="Ouvrir le menu">☰</button>
+    <div class="mobile-brand"><?= htmlspecialchars(SITE_NAME) ?></div>
+</div>
+
+<!-- Overlay sombre quand le menu est ouvert -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR — tiroir depuis la gauche -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="brand"><?= htmlspecialchars(SITE_NAME) ?></div>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Fermer le menu">✕</button>
+    </div>
     <div class="admin-info">
         <span class="avatar"><?= $_initial ?></span>
-        <?= htmlspecialchars($_adminNom) ?>
+        <div class="admin-details">
+            <div class="admin-name"><?= htmlspecialchars($_adminNom) ?></div>
+            <div class="admin-role">Administrateur</div>
+        </div>
     </div>
     <nav>
         <div class="nav-label">Navigation</div>

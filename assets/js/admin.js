@@ -234,36 +234,30 @@
         });
     };
 
-    // ── Hamburger Menu (Mobile) ────────────────────────────
-    var hamburger = document.querySelector('.sidebar .hamburger');
-    if (hamburger) {
-        hamburger.addEventListener('click', function() {
-            var nav = document.querySelector('.sidebar nav');
-            var logout = document.querySelector('.sidebar .logout');
-            var adminInfo = document.querySelector('.sidebar .admin-info');
-            var isOpen = nav ? nav.classList.contains('open') : false;
+    // ── Hamburger Menu (Mobile) — drawer slide-in ─────────
+    var hamburger    = document.querySelector('.mobile-topbar .hamburger');
+    var sidebar      = document.getElementById('sidebar');
+    var overlay      = document.getElementById('sidebarOverlay');
+    var closeBtn     = document.getElementById('sidebarClose');
 
-            if (nav) nav.classList.toggle('open');
-            if (logout) logout.classList.toggle('open');
-            if (adminInfo) adminInfo.classList.toggle('open');
-
-            // Changer l'icône du hamburger
-            this.textContent = isOpen ? '☰' : '✕';
-        });
-
-        // Fermer le menu quand on clique sur un lien
-        document.querySelectorAll('.sidebar nav a').forEach(function(link) {
-            link.addEventListener('click', function() {
-                var nav = document.querySelector('.sidebar nav');
-                var logout = document.querySelector('.sidebar .logout');
-                var adminInfo = document.querySelector('.sidebar .admin-info');
-                if (nav) nav.classList.remove('open');
-                if (logout) logout.classList.remove('open');
-                if (adminInfo) adminInfo.classList.remove('open');
-                if (hamburger) hamburger.textContent = '☰';
-            });
-        });
+    function openSidebar() {
+        if (sidebar)  sidebar.classList.add('open');
+        if (overlay)  overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
     }
+    function closeSidebar() {
+        if (sidebar)  sidebar.classList.remove('open');
+        if (overlay)  overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    if (hamburger) hamburger.addEventListener('click', openSidebar);
+    if (closeBtn)  closeBtn.addEventListener('click', closeSidebar);
+    if (overlay)   overlay.addEventListener('click', closeSidebar);
+
+    document.querySelectorAll('.sidebar nav a').forEach(function(link) {
+        link.addEventListener('click', closeSidebar);
+    });
 
     // ── Export CSV ─────────────────────────────────────────
     var exportBtn = document.getElementById('exportCsv');
