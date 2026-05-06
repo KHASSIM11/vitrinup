@@ -87,9 +87,6 @@ class AdminProduitsController extends Controller {
                 // Upload images
                 $this->uploadImages($produitId);
 
-                // Tailles
-                $this->saveTailles($produitId);
-
                 header('Location: ' . URL_ROOT . '/admin/produits');
                 exit;
             }
@@ -98,7 +95,6 @@ class AdminProduitsController extends Controller {
         $this->view('admin/produits/form', [
             'produit'    => null,
             'categories' => $categories,
-            'tailles'    => [],
             'images'     => [],
             'error'      => $error,
             'adminNom'   => $_SESSION['admin_nom'],
@@ -233,25 +229,6 @@ class AdminProduitsController extends Controller {
 
                 $ordre++;
             }
-        }
-    }
-
-    private function saveTailles(int $produitId): void {
-        $tailles = $_POST['tailles'] ?? [];
-        $stocks  = $_POST['stocks']  ?? [];
-
-        foreach ($tailles as $i => $taille) {
-            $taille = trim($taille);
-            $stock  = intval($stocks[$i] ?? 0);
-            if (empty($taille)) continue;
-
-            $this->db->query(
-                "INSERT INTO tailles_produits (produit_id, taille, stock) VALUES (:produit_id, :taille, :stock)"
-            )
-            ->bind(':produit_id', $produitId)
-            ->bind(':taille', $taille)
-            ->bind(':stock', $stock)
-            ->execute();
         }
     }
 
