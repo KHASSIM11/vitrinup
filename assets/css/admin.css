@@ -545,6 +545,8 @@ tr.row-faible td { background: rgba(255, 152, 0, 0.03); }
 .form-group select,
 .form-group input[type="number"],
 .form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
 .form-group textarea {
     width: 100%; padding: 11px 16px;
     border: 1.5px solid #e0e0e0;
@@ -564,6 +566,31 @@ tr.row-faible td { background: rgba(255, 152, 0, 0.03); }
     font-size: 0.75rem; color: var(--text-muted);
     margin-top: 4px;
 }
+
+/* ── Champ mot de passe avec œil ── */
+.password-wrap {
+    position: relative;
+}
+.password-wrap input {
+    padding-right: 46px;
+}
+.btn-eye {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    padding: 4px;
+    line-height: 1;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: color 0.2s;
+}
+.btn-eye:hover { color: var(--gold); }
 
 .form-row {
     display: grid;

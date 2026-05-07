@@ -39,32 +39,55 @@ require_once __DIR__ . '/../layout/header.php';
 
         <div class="form-group">
             <label><?= $isEdit ? 'Nouveau mot de passe' : 'Mot de passe *' ?></label>
-            <input type="password" name="password"
-                   <?= $isEdit ? '' : 'required' ?>
-                   minlength="6"
-                   placeholder="<?= $isEdit ? 'Laisser vide pour ne pas changer' : 'Minimum 6 caractères' ?>">
+            <div class="password-wrap">
+                <input type="password" id="pwd1" name="password"
+                       <?= $isEdit ? '' : 'required' ?>
+                       minlength="6"
+                       placeholder="<?= $isEdit ? 'Laisser vide pour ne pas changer' : 'Minimum 6 caractères' ?>">
+                <button type="button" class="btn-eye" data-target="pwd1"
+                        aria-label="Voir le mot de passe">👁</button>
+            </div>
             <?php if ($isEdit): ?>
-                <small class="text-muted">Laisser vide pour conserver le mot de passe actuel.</small>
+                <small class="help-text">Laisser vide pour conserver le mot de passe actuel.</small>
             <?php endif; ?>
         </div>
 
         <div class="form-group">
             <label><?= $isEdit ? 'Confirmer le nouveau mot de passe' : 'Confirmer le mot de passe *' ?></label>
-            <input type="password" name="confirm"
-                   <?= $isEdit ? '' : 'required' ?>
-                   minlength="6"
-                   placeholder="Répéter le mot de passe">
+            <div class="password-wrap">
+                <input type="password" id="pwd2" name="confirm"
+                       <?= $isEdit ? '' : 'required' ?>
+                       minlength="6"
+                       placeholder="Répéter le mot de passe">
+                <button type="button" class="btn-eye" data-target="pwd2"
+                        aria-label="Voir le mot de passe">👁</button>
+            </div>
         </div>
 
         <div style="display:flex;gap:12px;margin-top:8px;">
             <button type="submit" class="btn-submit">
                 <?= $isEdit ? '💾 Enregistrer' : '➕ Créer l\'administrateur' ?>
             </button>
-            <a href="<?= URL_ROOT ?>/admin/admins" class="btn-back" style="padding:10px 20px;border:1px solid #ddd;border-radius:8px;">
+            <a href="<?= URL_ROOT ?>/admin/admins" class="btn-back"
+               style="padding:10px 20px;border:1px solid #ddd;border-radius:8px;">
                 Annuler
             </a>
         </div>
     </div>
 </form>
+
+<script>
+document.querySelectorAll('.btn-eye').forEach(function(btn) {
+    var input = document.getElementById(btn.dataset.target);
+    function show() { if (input) input.type = 'text'; }
+    function hide() { if (input) input.type = 'password'; }
+    btn.addEventListener('mousedown',   show);
+    btn.addEventListener('touchstart',  show, { passive: true });
+    btn.addEventListener('mouseup',     hide);
+    btn.addEventListener('mouseleave',  hide);
+    btn.addEventListener('touchend',    hide);
+    btn.addEventListener('touchcancel', hide);
+});
+</script>
 
 <?php require_once __DIR__ . '/../layout/footer.php'; ?>
