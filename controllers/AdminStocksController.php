@@ -674,6 +674,21 @@ class AdminStocksController extends Controller {
         exit;
     }
 
+    // ── RÉINITIALISATION STOCK ─────────────────────────────
+    public function resetStock(): void {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . URL_ROOT . '/admin/stocks');
+            exit;
+        }
+
+        $this->db->query("UPDATE tailles_produits SET stock = 0")->execute();
+        $this->db->query("DELETE FROM mouvements_stock")->execute();
+
+        $_SESSION['flash_success'] = 'Stock réinitialisé : toutes les quantités remises à zéro et historique effacé.';
+        header('Location: ' . URL_ROOT . '/admin/stocks');
+        exit;
+    }
+
     // ── EXPORT PDF ─────────────────────────────────────────
     public function exportPdf(): void {
         $search  = trim($_GET['search'] ?? '');

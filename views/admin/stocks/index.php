@@ -23,6 +23,7 @@ require_once __DIR__ . '/../layout/header.php';
     </div>
     <div class="header-actions">
         <a href="<?= URL_ROOT ?>/admin/stocks/exportPdf?<?= http_build_query(['search' => $search, 'statut' => $statut]) ?>" class="btn-export" id="exportPdf" target="_blank">📥 Export PDF</a>
+        <button type="button" class="btn-reset-stock" id="btnResetStock">🗑️ Réinitialiser le stock</button>
     </div>
 </div>
 
@@ -256,5 +257,73 @@ require_once __DIR__ . '/../layout/header.php';
     </div>
 </div>
 <?php endif; ?>
+
+<!-- Modal réinitialisation stock -->
+<div class="modal-overlay" id="resetModalOverlay" style="display:none;">
+    <div class="modal" style="max-width:460px;">
+        <div style="text-align:center;margin-bottom:16px;">
+            <span style="font-size:2.5rem;line-height:1;">⚠️</span>
+        </div>
+        <h3 style="text-align:center;color:#c62828;">Réinitialisation complète du stock</h3>
+        <div style="background:#fce4ec;border-left:4px solid #c62828;border-radius:4px;padding:12px 14px;margin:16px 0;font-size:0.88rem;line-height:1.7;color:#b71c1c;">
+            <strong>Cette action est irréversible.</strong><br>
+            Elle va supprimer :<br>
+            • Toutes les quantités de stock (remises à 0)<br>
+            • Tout l'historique des mouvements de stock
+        </div>
+        <div style="margin:16px 0;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;">
+                <input type="checkbox" id="resetConfirmCheck" style="width:16px;height:16px;cursor:pointer;">
+                <span>Je comprends que cette action est irréversible</span>
+            </label>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" id="btnResetCancel">Annuler</button>
+            <form method="POST" action="<?= URL_ROOT ?>/admin/stocks/resetStock" style="display:inline;">
+                <button type="submit" class="btn-danger" id="btnResetConfirm" disabled>🗑️ Tout réinitialiser</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-reset-stock {
+    background: #c62828;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    font-family: inherit;
+}
+.btn-reset-stock:hover { background: #b71c1c; transform: translateY(-1px); }
+</style>
+
+<script>
+(function () {
+    var btn     = document.getElementById('btnResetStock');
+    var overlay = document.getElementById('resetModalOverlay');
+    var cancel  = document.getElementById('btnResetCancel');
+    var check   = document.getElementById('resetConfirmCheck');
+    var confirm = document.getElementById('btnResetConfirm');
+
+    btn.addEventListener('click', function () {
+        check.checked = false;
+        confirm.disabled = true;
+        overlay.style.display = 'flex';
+    });
+
+    function close() { overlay.style.display = 'none'; }
+    cancel.addEventListener('click', close);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+
+    check.addEventListener('change', function () {
+        confirm.disabled = !this.checked;
+    });
+})();
+</script>
 
 <?php require_once __DIR__ . '/../layout/footer.php'; ?>
