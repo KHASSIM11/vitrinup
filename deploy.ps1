@@ -14,9 +14,9 @@ param(
 
 # ── Bannière ─────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "  ╔══════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║    VitrinUp — Deploiement Hostinger      ║" -ForegroundColor Cyan
-Write-Host "  ╚══════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "  =====================================" -ForegroundColor Cyan
+Write-Host "   VitrinUp -- Deploiement Hostinger  " -ForegroundColor Cyan
+Write-Host "  =====================================" -ForegroundColor Cyan
 Write-Host ""
 
 # ── Lire .env.deploy ─────────────────────────────────────────────
@@ -59,8 +59,8 @@ if ($result -match "DEPLOY_OK") {
     Write-Host ""
     Write-Host "  Deploiement termine avec succes !" -ForegroundColor Green
 
-    # Afficher les fichiers mis à jour
-    $logCmd = "cd $sshPath && git log -1 --format='  Commit : %h — %s' && git diff --name-only HEAD~1 HEAD"
+    # Afficher le dernier commit deployé
+    $logCmd = "cd $sshPath && git log -1 --oneline && git diff --name-only HEAD~1 HEAD"
     $log = ssh -p $sshPort -o StrictHostKeyChecking=no $sshTarget $logCmd 2>$null
     if ($log) {
         Write-Host ""
