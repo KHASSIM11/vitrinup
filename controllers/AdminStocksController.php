@@ -580,6 +580,81 @@ class AdminStocksController extends Controller {
         exit;
     }
 
+    // ── EXPORT PDF ─────────────────────────────────────────
+    public function exportPdf(): void {
+        $search  = trim($_GET['search'] ?? '');
+        $statut  = $_GET['statut'] ?? '';
+
+        $where  = [];
+        $params = [];
+
+        if (!empty($search)) {
+            $where[] = "(p.nom LIKE :search OR p.marque LIKE :search2)";
+            $params[':search']  = '%' . $search . '%';
+            $params[':search2'] = '%' . $search . '%';
+        }
+        if ($statut === 'faible') {
+            $where[] = "(SELECT COALESCE(SUM(tp2.stock), 0) FROM tailles_produits tp2 WHERE tp2.produit_id = p.id) BETWEEN 1 AND :seuil";
+            $params[':seuil'] = STOCK_SEUIL_ALERTE;
+        } elseif ($statut === 'rupture') {
+            $where[] = "p.id NOT IN (SELECT tp3.produit_id FROM tailles_produits tp3 WHERE tp3.stock > 0)";
+        } elseif ($statut === 'ok') {
+            $where[] = "(SELECT COALESCE(SUM(tp4.stock), 0) FROM tailles_produits tp4 WHERE tp4.produit_id = p.id) > :seuil2";
+            $params[':seuil2'] = STOCK_SEUIL_ALERTE;
+        }
+
+        $whereClause = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
+
+        // Total
+        $countQuery = $this->db->query("SELECT COUNT(*) AS cnt FROM produits p" . $whereClause);
+        foreach ($params as $k => $v) { $countQuery->bind($k, $v); }
+        $total = $countQuery->single()['cnt'];
+
+        // Tous les produits (sans pagination pour le PDF)
+        $sql = "SELECT p.id, p.nom, p.marque, p.statut,
+                       (SELECT COALESCE(SUM(tp.stock), 0) FROM tailles_produits tp WHERE tp.produit_id = p.id) AS stock_total
+                FROM produits p"
+                . $whereClause .
+                " ORDER BY stock_total ASC, p.nom ASC";
+
+        $query = $this->db->query($sql);
+        foreach ($params as $k => $v) { $query->bind($k, $v); }
+        $produits = $query->resultSet();
+
+        // Tailles pour chaque produit
+        $produitIds = array_column($produits, 'id');
+        $taillesParProduit = [];
+        if (!empty($produitIds)) {
+            $idsStr = implode(',', $produitIds);
+            $tailles = $this->db->query(
+                "SELECT id, produit_id, taille, stock FROM tailles_produits WHERE produit_id IN ($idsStr) ORDER BY taille ASC"
+            )->resultSet();
+            foreach ($tailles as $t) {
+                $taillesParProduit[$t['produit_id']][] = $t;
+            }
+        }
+
+        // Stats globales
+        $stats = $this->db->query(
+            "SELECT
+                (SELECT COUNT(*) FROM produits p1 WHERE p1.id IN (SELECT tp1.produit_id FROM tailles_produits tp1 GROUP BY tp1.produit_id HAVING COALESCE(SUM(tp1.stock), 0) > :seuil3)) AS avec_stock,
+                (SELECT COUNT(*) FROM produits p2 WHERE p2.id IN (SELECT tp2.produit_id FROM tailles_produits tp2 GROUP BY tp2.produit_id HAVING COALESCE(SUM(tp2.stock), 0) BETWEEN 1 AND :seuil4)) AS stock_faible,
+                (SELECT COUNT(*) FROM produits p3 WHERE (p3.id NOT IN (SELECT tp3.produit_id FROM tailles_produits tp3 WHERE tp3.stock > 0) OR (SELECT COALESCE(SUM(tp4.stock), 0) FROM tailles_produits tp4 WHERE tp4.produit_id = p3.id) = 0) AND p3.statut = 'actif') AS rupture"
+        )->bind(':seuil3', STOCK_SEUIL_ALERTE)
+         ->bind(':seuil4', STOCK_SEUIL_ALERTE)
+         ->single();
+
+        $this->view('admin/stocks/export_pdf', [
+            'produits'          => $produits,
+            'taillesParProduit' => $taillesParProduit,
+            'stats'             => $stats,
+            'total'             => $total,
+            'search'            => $search,
+            'statut'            => $statut,
+            'adminNom'          => $_SESSION['admin_nom'],
+        ]);
+    }
+
     // ── EXPORT CSV ─────────────────────────────────────────
     public function exportCsv(): void {
         $search  = trim($_GET['search'] ?? '');

@@ -22,7 +22,7 @@ require_once __DIR__ . '/../layout/header.php';
         <div class="subtitle">Seuil d'alerte : <strong><?= STOCK_SEUIL_ALERTE ?></strong> unités par taille</div>
     </div>
     <div class="header-actions">
-        <a href="<?= URL_ROOT ?>/admin/stocks/exportCsv?<?= http_build_query(['search' => $search, 'statut' => $statut]) ?>" class="btn-export" id="exportCsv">📥 Export CSV</a>
+        <a href="<?= URL_ROOT ?>/admin/stocks/exportPdf?<?= http_build_query(['search' => $search, 'statut' => $statut]) ?>" class="btn-export" id="exportPdf" target="_blank">📥 Export PDF</a>
     </div>
 </div>
 
