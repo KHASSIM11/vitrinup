@@ -206,6 +206,33 @@ class AdminStocksController extends Controller {
 
     // ── SORTIE DE STOCK ─────────────────────────────────────
     public function sortie(): void {
+        // Produits actifs pour le formulaire de sortie manuelle
+        $produits = $this->db->query(
+            "SELECT p.id, p.nom, p.marque
+             FROM produits p WHERE p.statut = 'actif' ORDER BY p.nom ASC"
+        )->resultSet();
+
+        $produitIds = array_column($produits, 'id');
+        $taillesParProduit = [];
+        if (!empty($produitIds)) {
+            $idsStr = implode(',', $produitIds);
+            $tailles = $this->db->query(
+                "SELECT id, produit_id, taille, stock FROM tailles_produits WHERE produit_id IN ($idsStr) ORDER BY taille ASC"
+            )->resultSet();
+            foreach ($tailles as $t) {
+                $taillesParProduit[$t['produit_id']][] = $t;
+            }
+        }
+
+        // Dernières sorties manuelles (type='sortie' hors commandes)
+        $dernieresSorties = $this->db->query(
+            "SELECT m.*, p.nom AS produit_nom
+             FROM mouvements_stock m
+             JOIN produits p ON m.produit_id = p.id
+             WHERE m.type = 'sortie'
+             ORDER BY m.created_at DESC LIMIT 8"
+        )->resultSet();
+
         $commandes = $this->db->query(
             "SELECT c.id, c.produit_id, c.taille, c.quantite, c.client_nom, c.client_tel, c.statut, c.created_at,
                     p.nom AS produit_nom, p.marque,
@@ -236,10 +263,77 @@ class AdminStocksController extends Controller {
         }
 
         $this->view('admin/stocks/sortie', [
-            'commandes'      => $commandes,
-            'statsCommandes' => $statsCommandes,
-            'adminNom'       => $_SESSION['admin_nom'],
+            'commandes'         => $commandes,
+            'statsCommandes'    => $statsCommandes,
+            'produits'          => $produits,
+            'taillesParProduit' => $taillesParProduit,
+            'dernieresSorties'  => $dernieresSorties,
+            'adminNom'          => $_SESSION['admin_nom'],
         ]);
+    }
+
+    // ── SORTIE MANUELLE (POST) ─────────────────────────────
+    public function ajouterSortieManuelle(): void {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . URL_ROOT . '/admin/stocks/sortie');
+            exit;
+        }
+
+        $produitId = intval($_POST['produit_id'] ?? 0);
+        $tailleId  = intval($_POST['taille_id']  ?? 0);
+        $quantite  = intval($_POST['quantite']    ?? 0);
+        $motif     = trim($_POST['motif']         ?? '');
+        $note      = trim($_POST['note']          ?? '');
+
+        if ($produitId <= 0 || $tailleId <= 0 || $quantite <= 0 || empty($motif)) {
+            $_SESSION['flash_error'] = 'Veuillez remplir tous les champs obligatoires.';
+            header('Location: ' . URL_ROOT . '/admin/stocks/sortie');
+            exit;
+        }
+
+        $taille = $this->db->query(
+            "SELECT tp.*, p.nom AS produit_nom FROM tailles_produits tp
+             JOIN produits p ON tp.produit_id = p.id
+             WHERE tp.id = :id AND tp.produit_id = :pid"
+        )->bind(':id', $tailleId)->bind(':pid', $produitId)->single();
+
+        if (!$taille) {
+            $_SESSION['flash_error'] = 'Taille introuvable pour ce produit.';
+            header('Location: ' . URL_ROOT . '/admin/stocks/sortie');
+            exit;
+        }
+
+        $stockAvant = intval($taille['stock']);
+        if ($quantite > $stockAvant) {
+            $_SESSION['flash_error'] = 'Stock insuffisant : ' . $stockAvant . ' unité(s) disponible(s) pour la taille ' . $taille['taille'] . '.';
+            header('Location: ' . URL_ROOT . '/admin/stocks/sortie');
+            exit;
+        }
+
+        $stockApres = $stockAvant - $quantite;
+        $reference  = $motif . ($note ? ' — ' . $note : '');
+
+        $this->db->query("UPDATE tailles_produits SET stock = :stock WHERE id = :id")
+                 ->bind(':stock', $stockApres)
+                 ->bind(':id', $tailleId)
+                 ->execute();
+
+        $this->db->query(
+            "INSERT INTO mouvements_stock (produit_id, taille_id, taille, type, quantite, stock_avant, stock_apres, reference)
+             VALUES (:produit_id, :taille_id, :taille, 'sortie', :quantite, :stock_avant, :stock_apres, :reference)"
+        )
+        ->bind(':produit_id', $produitId)
+        ->bind(':taille_id', $tailleId)
+        ->bind(':taille', $taille['taille'])
+        ->bind(':quantite', $quantite)
+        ->bind(':stock_avant', $stockAvant)
+        ->bind(':stock_apres', $stockApres)
+        ->bind(':reference', $reference)
+        ->execute();
+
+        $_SESSION['flash_success'] = '📤 Sortie enregistrée : −' . $quantite . ' ' . htmlspecialchars($taille['produit_nom']) . ' (taille ' . $taille['taille'] . ') — ' . htmlspecialchars($motif);
+        header('Location: ' . URL_ROOT . '/admin/stocks/sortie');
+        exit;
     }
 
     // ── AJOUTER SORTIE (POST) ──────────────────────────────
