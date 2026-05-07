@@ -12,6 +12,7 @@ $_nav = [
     'categories' => ['url' => '/admin/categories', 'icon' => '🗂️', 'label' => 'Catégories'],
     'commandes'  => ['url' => '/admin/commandes',  'icon' => '📦', 'label' => 'Commandes'],
     'stocks'     => ['url' => '/admin/stocks',     'icon' => '📋', 'label' => 'Stocks'],
+    'admins'     => ['url' => '/admin/admins',     'icon' => '👥', 'label' => 'Administrateurs'],
 ];
 $_activePage = $activePage ?? '';
 $_adminNom   = $adminNom ?? '';

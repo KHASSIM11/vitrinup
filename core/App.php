@@ -116,6 +116,15 @@ class App {
                     $this->params     = isset($url[3]) ? [$url[3]] : [];
                     break;
 
+                case 'admins':
+                    $this->controller = 'AdminAdminsController';
+                    $action = $url[2] ?? 'index';
+                    if (in_array($action, ['index', 'ajouter', 'modifier', 'supprimer'])) {
+                        $this->method = $action;
+                        $this->params = isset($url[3]) ? [$url[3]] : [];
+                    }
+                    break;
+
                 default:
                     // /admin → dashboard
                     $this->controller = 'AdminController';
